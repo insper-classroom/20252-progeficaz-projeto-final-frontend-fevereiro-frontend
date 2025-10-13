@@ -165,3 +165,16 @@
     padding: 1rem;
   }
 }
+
+.character-count {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+.character-count-warning {
+  color: #dc3545;
+  font-weight: 600;
+}
+

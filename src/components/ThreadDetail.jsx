@@ -66,6 +66,9 @@ const ThreadDetail = () => {
       <div className="thread-header">
         <Link to="/" className="back-link">← Back to Threads</Link>
         <h1 className="thread-title">{thread.title}</h1>
+        {thread.description && (
+          <p className="thread-description-detail">{thread.description}</p>
+        )}
         <p className="thread-date">
           Created: {formatDate(thread.created_at)}
         </p>

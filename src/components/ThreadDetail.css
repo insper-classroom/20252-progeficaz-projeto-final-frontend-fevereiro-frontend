@@ -41,6 +41,22 @@
   overflow-wrap: break-word;
 }
 
+.thread-description-detail {
+  color: #495057;
+  font-size: 1rem;
+  margin: 0.75rem 0 1rem 0;
+  line-height: 1.5;
+  font-style: italic;
+  padding: 0.75rem 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  border-left: 0.25rem solid #28a745;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
 .thread-date {
   color: #666;
   font-size: 0.875rem;
@@ -129,6 +145,18 @@
   background-color: #007bff;
   font-size: 1rem;
   padding: 0.75rem 1.5rem;
+}
+
+.character-count {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+.character-count-warning {
+  color: #dc3545;
+  font-weight: 600;
 }
 
 /* Mobile responsiveness */

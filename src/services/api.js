@@ -14,12 +14,19 @@ export const forumAPI = {
   getThreads: () => api.get('/threads'),
   
   // Create a new thread
-  createThread: (title) => api.post('/threads', { title }),
+  createThread: (title, description = '') => {
+    const payload = { title, description };
+    console.log('API sending thread data:', payload);
+    return api.post('/threads', payload);
+  },
   
   // Get a specific thread with posts
   getThread: (threadId) => api.get(`/threads/${threadId}`),
   
   // Create a post in a thread
-  createPost: (threadId, author, content) => 
-    api.post(`/threads/${threadId}/posts`, { author, content }),
+  createPost: (threadId, author, content) => {
+    const payload = { author, content };
+    console.log('API sending post data:', payload);
+    return api.post(`/threads/${threadId}/posts`, payload);
+  },
 };
