@@ -11,10 +11,18 @@ const FilterDisplay = ({ filters }) => {
             return null;
         }
 
+        console.log(`Getting display value for ${filterKey}:`, value);
+
         switch (filterKey) {
             case 'semester': {
-                const semester = SEMESTERS.find(s => s.id === value);
-                return semester ? semester.name : null;
+                // Handle both single value and array format for active filters
+                const semesterValues = Array.isArray(value) ? value : [value];
+                const semesterNames = semesterValues.map(semesterValue => {
+                    const normalizedValue = parseInt(semesterValue);
+                    const semester = SEMESTERS.find(s => s.id === normalizedValue);
+                    return semester ? semester.name : `${normalizedValue}º Semestre`;
+                });
+                return semesterNames.join(', ');
             }
             
             case 'courses': {
@@ -51,7 +59,10 @@ const FilterDisplay = ({ filters }) => {
 
     const hasAnyFilters = Object.keys(filters).some(key => {
         const value = filters[key];
-        return value && (Array.isArray(value) ? value.length > 0 : true);
+        if (Array.isArray(value)) {
+            return value.length > 0;
+        }
+        return value !== null && value !== undefined && value !== '';
     });
 
     if (!hasAnyFilters) return null;

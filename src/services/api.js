@@ -49,7 +49,26 @@ api.interceptors.response.use(
 
 export const forumAPI = {
   // Get all threads
-  getThreads: () => api.get('/threads'),
+  getThreads: () => {
+    console.log('Fetching all threads...');
+    return api.get('/threads').then(response => {
+      console.log('Threads received from API:', response.data);
+      
+      // Garantir que cada thread tenha os campos de filtro
+      if (Array.isArray(response.data)) {
+        response.data = response.data.map(thread => ({
+          ...thread,
+          // Garantir que os campos de filtro existam, mesmo que vazios
+          semester: thread.semester || null,
+          courses: thread.courses || [],
+          subjects: thread.subjects || []
+        }));
+        console.log('Threads with filter data ensured:', response.data);
+      }
+      
+      return response;
+    });
+  },
   
   // Create a new thread with filters
   createThread: (title, description = '', semester = null, courses = [], subjects = []) => {

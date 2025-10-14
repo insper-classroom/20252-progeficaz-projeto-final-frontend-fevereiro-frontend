@@ -121,6 +121,7 @@ const ThreadDetail = () => {
           courses: thread.courses,
           subjects: thread.subjects
         }} />
+
       </div>
 
       <div className="posts-section">
