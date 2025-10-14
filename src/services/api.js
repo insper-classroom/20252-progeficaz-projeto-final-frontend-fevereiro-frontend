@@ -10,11 +10,39 @@ export const api = axios.create({
   },
 });
 
+// Request interceptor for debugging
+api.interceptors.request.use(
+  (config) => {
+    console.log('API Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      data: config.data
+    });
+    return config;
+  },
+  (error) => {
+    console.error('API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response:', {
+      status: response.status,
+      url: response.config.url,
+      data: response.data
+    });
+    return response;
+  },
   (error) => {
-    console.error('API Error:', error.response?.data || error.message);
+    console.error('API Error:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      data: error.response?.data,
+      message: error.message
+    });
     return Promise.reject(error);
   }
 );
@@ -37,7 +65,10 @@ export const forumAPI = {
   },
   
   // Get a specific thread with posts
-  getThread: (threadId) => api.get(`/threads/${threadId}`),
+  getThread: (threadId) => {
+    console.log('Fetching thread with ID:', threadId);
+    return api.get(`/threads/${threadId}`);
+  },
   
   // Create a post in a thread
   createPost: (threadId, author, content) => {

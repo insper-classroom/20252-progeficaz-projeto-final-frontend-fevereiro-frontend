@@ -1,0 +1,59 @@
+.filter-display {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.filter-display-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.filter-display-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #495057;
+    margin-right: 0.5rem;
+}
+
+.filter-value {
+    color: #2c3e50;
+    background: #e3f2fd;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .filter-display {
+        padding: 0.75rem;
+        margin: 0.75rem 0;
+    }
+    
+    .filter-display-content {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .filter-display-item {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .filter-value {
+        font-size: 0.8rem;
+    }
+}
