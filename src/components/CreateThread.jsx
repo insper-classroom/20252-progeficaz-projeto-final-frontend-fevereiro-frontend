@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import QuestionFilters from './QuestionFilters';
 import { forumAPI } from '../services/api';
+import { extractErrorMessage } from '../utils/restfulHelpers';
 import './CreateThread.css';
 
 const CreateThread = () => {
@@ -77,11 +78,23 @@ const CreateThread = () => {
       );
       
       console.log('Thread created successfully:', response.data);
-      navigate(`/thread/${response.data.id}`);
+      
+      // Navigate to the created thread
+      if (response.data.id) {
+        navigate(`/thread/${response.data.id}`);
+      } else {
+        console.error('No thread ID in response:', response.data);
+        setErrors({
+          submit: 'Pergunta criada, mas houve um erro ao redirecionar. Verifique a lista de perguntas.'
+        });
+      }
+      
     } catch (error) {
       console.error('Error creating thread:', error);
+      
+      // Use utility function for consistent error handling
       setErrors({
-        submit: error.response?.data?.error || 'Erro ao criar pergunta. Tente novamente.'
+        submit: extractErrorMessage(error)
       });
     } finally {
       setLoading(false);
