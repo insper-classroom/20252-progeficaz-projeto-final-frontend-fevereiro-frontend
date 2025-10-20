@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import FilterDisplay from './FilterDisplay';
 import { forumAPI } from '../services/api';
+import { extractErrorMessage } from '../utils/restfulHelpers';
 import './ThreadDetail.css';
 
 const ThreadDetail = () => {
@@ -14,45 +15,36 @@ const ThreadDetail = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    const fetchThread = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log('Fetching thread with ID:', id);
+        const response = await forumAPI.getThread(id);
+        console.log('API Response:', response.data);
+        
+        // The API service now normalizes the response structure
+        if (response.data.thread && response.data.posts) {
+          // Normalized structure from API service
+          setThread(response.data.thread);
+          setPosts(response.data.posts);
+        } else {
+          throw new Error('Invalid response structure received from API');
+        }
+        
+      } catch (error) {
+        console.error('Error fetching thread:', error);
+        
+        // Use utility function for consistent error handling
+        setError(extractErrorMessage(error));
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchThread();
   }, [id]);
-
-  const fetchThread = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      console.log('Fetching thread with ID:', id);
-      const response = await forumAPI.getThread(id);
-      console.log('API Response:', response.data);
-      
-      // Handle different possible response structures
-      if (response.data.thread && response.data.posts) {
-        // Structure: { thread: {...}, posts: [...] }
-        setThread(response.data.thread);
-        setPosts(response.data.posts || []);
-      } else if (response.data.id) {
-        // Structure: thread data directly in response.data
-        setThread(response.data);
-        setPosts(response.data.posts || []);
-      } else {
-        throw new Error('Invalid response structure');
-      }
-      
-    } catch (error) {
-      console.error('Error fetching thread:', error);
-      
-      if (error.response?.status === 404) {
-        setError('Pergunta não encontrada');
-      } else if (error.response?.status === 500) {
-        setError('Erro interno do servidor. Tente novamente mais tarde.');
-      } else {
-        setError(error.response?.data?.error || 'Erro ao carregar a pergunta');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmitPost = async (e) => {
     e.preventDefault();
@@ -64,12 +56,23 @@ const ThreadDetail = () => {
 
     try {
       setSubmitting(true);
-      await forumAPI.createPost(id, newPost.author.trim(), newPost.content.trim());
+      const response = await forumAPI.createPost(id, newPost.author.trim(), newPost.content.trim());
+      console.log('Post created:', response.data);
+      
       setNewPost({ author: '', content: '' });
-      await fetchThread(); // Reload to get new post
+      
+      // Reload the thread to get the new post
+      const threadResponse = await forumAPI.getThread(id);
+      if (threadResponse.data.thread && threadResponse.data.posts) {
+        setThread(threadResponse.data.thread);
+        setPosts(threadResponse.data.posts);
+      }
+      
     } catch (error) {
       console.error('Error creating post:', error);
-      alert('Erro ao criar resposta. Tente novamente.');
+      
+      // Use utility function for consistent error handling
+      alert(extractErrorMessage(error));
     } finally {
       setSubmitting(false);
     }

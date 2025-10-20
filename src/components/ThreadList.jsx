@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import FilterModal from './FilterModal';
 import FilterDisplay from './FilterDisplay';
 import { forumAPI } from '../services/api';
+import { extractErrorMessage } from '../utils/restfulHelpers';
 import LoadingSpinner from './LoadingSpinner';
 import './ThreadList.css';
 
@@ -21,11 +22,26 @@ const ThreadList = () => {
   useEffect(() => {
     const fetchThreads = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        
         const response = await forumAPI.getThreads();
-        setThreads(response.data);
+        console.log('Threads response:', response.data);
+        
+        // The API service now returns normalized thread data
+        if (Array.isArray(response.data)) {
+          setThreads(response.data);
+        } else {
+          console.error('Expected array of threads, received:', response.data);
+          setThreads([]);
+          setError('Formato de resposta inesperado do servidor');
+        }
+        
       } catch (err) {
-        setError('Failed to load threads');
         console.error('Error fetching threads:', err);
+        
+        // Use utility function for consistent error handling
+        setError(extractErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -35,92 +51,98 @@ const ThreadList = () => {
   }, []);
 
   useEffect(() => {
+    const hasActiveFilters = () => {
+      return (activeFilters.semester && activeFilters.semester.length > 0) || 
+             (activeFilters.courses && activeFilters.courses.length > 0) || 
+             (activeFilters.subjects && activeFilters.subjects.length > 0);
+    };
+
+    const applyFiltersToThreads = () => {
+      if (!hasActiveFilters()) {
+        setFilteredThreads(threads);
+        return;
+      }
+
+      console.log('Applying filters:', activeFilters);
+      console.log('All threads:', threads);
+
+      const filtered = threads.filter(thread => {
+        console.log('Checking thread:', thread);
+        
+        // Check semester filter
+        if (activeFilters.semester && activeFilters.semester.length > 0) {
+          // Normalize both values to numbers for comparison
+          const threadSemester = parseInt(thread.semester);
+          const hasMatchingSemester = activeFilters.semester.some(filterSemester => {
+            const normalizedFilterSemester = parseInt(filterSemester);
+            return threadSemester === normalizedFilterSemester;
+          });
+          
+          console.log('Semester check:', {
+            threadSemester,
+            activeFilterSemesters: activeFilters.semester,
+            hasMatch: hasMatchingSemester
+          });
+          
+          if (!hasMatchingSemester) {
+            return false;
+          }
+        }
+
+        // Check courses filter
+        if (activeFilters.courses && activeFilters.courses.length > 0) {
+          if (!thread.courses || !Array.isArray(thread.courses)) {
+            console.log('Thread has no courses array');
+            return false;
+          }
+          
+          const hasMatchingCourse = thread.courses.some(threadCourse => 
+            activeFilters.courses.includes(threadCourse)
+          );
+          
+          console.log('Courses check:', {
+            threadCourses: thread.courses,
+            activeFilterCourses: activeFilters.courses,
+            hasMatch: hasMatchingCourse
+          });
+          
+          if (!hasMatchingCourse) {
+            return false;
+          }
+        }
+
+        // Check subjects filter
+        if (activeFilters.subjects && activeFilters.subjects.length > 0) {
+          if (!thread.subjects || !Array.isArray(thread.subjects)) {
+            console.log('Thread has no subjects array');
+            return false;
+          }
+          
+          const hasMatchingSubject = thread.subjects.some(threadSubject => 
+            activeFilters.subjects.includes(threadSubject)
+          );
+          
+          console.log('Subjects check:', {
+            threadSubjects: thread.subjects,
+            activeFilterSubjects: activeFilters.subjects,
+            hasMatch: hasMatchingSubject
+          });
+          
+          if (!hasMatchingSubject) {
+            return false;
+          }
+        }
+
+        console.log('Thread passed all filters');
+        return true;
+      });
+
+      console.log('Filtered threads:', filtered);
+      setFilteredThreads(filtered);
+    };
+
     applyFiltersToThreads();
   }, [threads, activeFilters]);
-
-  const applyFiltersToThreads = () => {
-    if (!hasActiveFilters()) {
-      setFilteredThreads(threads);
-      return;
-    }
-
-    console.log('Applying filters:', activeFilters);
-    console.log('All threads:', threads);
-
-    const filtered = threads.filter(thread => {
-      console.log('Checking thread:', thread);
-      
-      // Check semester filter
-      if (activeFilters.semester && activeFilters.semester.length > 0) {
-        // Normalize both values to numbers for comparison
-        const threadSemester = parseInt(thread.semester);
-        const hasMatchingSemester = activeFilters.semester.some(filterSemester => {
-          const normalizedFilterSemester = parseInt(filterSemester);
-          return threadSemester === normalizedFilterSemester;
-        });
-        
-        console.log('Semester check:', {
-          threadSemester,
-          activeFilterSemesters: activeFilters.semester,
-          hasMatch: hasMatchingSemester
-        });
-        
-        if (!hasMatchingSemester) {
-          return false;
-        }
-      }
-
-      // Check courses filter
-      if (activeFilters.courses && activeFilters.courses.length > 0) {
-        if (!thread.courses || !Array.isArray(thread.courses)) {
-          console.log('Thread has no courses array');
-          return false;
-        }
-        
-        const hasMatchingCourse = thread.courses.some(threadCourse => 
-          activeFilters.courses.includes(threadCourse)
-        );
-        
-        console.log('Courses check:', {
-          threadCourses: thread.courses,
-          activeFilterCourses: activeFilters.courses,
-          hasMatch: hasMatchingCourse
-        });
-        
-        if (!hasMatchingCourse) {
-          return false;
-        }
-      }
-
-      // Check subjects filter
-      if (activeFilters.subjects && activeFilters.subjects.length > 0) {
-        if (!thread.subjects || !Array.isArray(thread.subjects)) {
-          console.log('Thread has no subjects array');
-          return false;
-        }
-        
-        const hasMatchingSubject = thread.subjects.some(threadSubject => 
-          activeFilters.subjects.includes(threadSubject)
-        );
-        
-        console.log('Subjects check:', {
-          threadSubjects: thread.subjects,
-          activeFilterSubjects: activeFilters.subjects,
-          hasMatch: hasMatchingSubject
-        });
-        
-        if (!hasMatchingSubject) {
-          return false;
-        }
-      }
-
-      console.log('Thread passed all filters');
-      return true;
-    });
-
-    console.log('Filtered threads:', filtered);
-    setFilteredThreads(filtered);
-  };
 
   const hasActiveFilters = () => {
     return (activeFilters.semester && activeFilters.semester.length > 0) || 
