@@ -34,7 +34,7 @@ export default function Register() {
   })
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/" replace />
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,7 +45,7 @@ export default function Register() {
         toast.success('Account created successfully!', {
           description: `Welcome, ${data.user.email}`,
         })
-        navigate('/dashboard')
+        navigate('/')
       },
       onError: (error: any) => {
         toast.error('Registration failed', {

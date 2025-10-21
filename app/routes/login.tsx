@@ -34,7 +34,7 @@ export default function Login() {
   })
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/" replace />
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,7 +45,7 @@ export default function Login() {
         toast.success('Login successful!', {
           description: `Welcome back, ${data.user.email}`,
         })
-        navigate('/dashboard')
+        navigate('/')
       },
       onError: (error: any) => {
         toast.error('Login failed', {
