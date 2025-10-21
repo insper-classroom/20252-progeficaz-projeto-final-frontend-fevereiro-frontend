@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import QuestionFilters from './QuestionFilters';
 import { forumAPI } from '../services/api';
 import { extractErrorMessage } from '../utils/restfulHelpers';
+// Importar serviço de moderação
+import { verificarMultiplosCampos } from '../services/moderationService';
 import './CreateThread.css';
 
 const CreateThread = () => {
@@ -16,6 +18,8 @@ const CreateThread = () => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  // Estado para mensagem de moderação
+  const [moderationWarning, setModerationWarning] = useState(null);
 
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
@@ -57,8 +61,41 @@ const CreateThread = () => {
     }
     
     setLoading(true);
+    setModerationWarning(null); // Limpar avisos anteriores
     
     try {
+      // ====== MODERAÇÃO DE CONTEÚDO ======
+      // Verificar título e descrição antes de enviar
+      console.log('🔍 Verificando conteúdo com moderação...');
+      
+      const resultadoModeracao = await verificarMultiplosCampos({
+        titulo: title,
+        descricao: description
+      });
+
+      // Se o conteúdo foi rejeitado, bloquear envio
+      if (!resultadoModeracao.aprovado) {
+        console.warn('⚠️ Conteúdo bloqueado pela moderação');
+        
+        // Mostrar mensagem de aviso
+        setModerationWarning({
+          campo: resultadoModeracao.campoRejeitado,
+          mensagem: resultadoModeracao.mensagem
+        });
+        
+        // Destacar o campo problemático
+        setErrors(prev => ({
+          ...prev,
+          [resultadoModeracao.campoRejeitado]: 'Este campo contém conteúdo impróprio'
+        }));
+        
+        setLoading(false);
+        return; // Impedir envio
+      }
+
+      console.log('✅ Conteúdo aprovado pela moderação');
+      // ====== FIM DA MODERAÇÃO ======
+      
       // Prepare data with filters
       const threadData = {
         title: title.trim(),
@@ -106,10 +143,18 @@ const CreateThread = () => {
     if (errors.title) {
       setErrors(prev => ({ ...prev, title: '' }));
     }
+    // Limpar aviso de moderação ao editar
+    if (moderationWarning?.campo === 'titulo') {
+      setModerationWarning(null);
+    }
   };
 
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
+    // Limpar aviso de moderação ao editar
+    if (moderationWarning?.campo === 'descricao') {
+      setModerationWarning(null);
+    }
   };
 
   return (
@@ -120,6 +165,21 @@ const CreateThread = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="create-thread-form">
+        {/* Mensagem de aviso de moderação */}
+        {moderationWarning && (
+          <div className="moderation-warning">
+            <div className="moderation-warning-icon">⚠️</div>
+            <div className="moderation-warning-content">
+              <strong>Conteúdo Bloqueado</strong>
+              <p>{moderationWarning.mensagem}</p>
+              <p className="moderation-hint">
+                Por favor, revise o {moderationWarning.campo === 'titulo' ? 'título' : 'descrição'} 
+                e remova qualquer conteúdo impróprio antes de tentar novamente.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="form-group">
           <label htmlFor="title" className="form-label">
             Título da Pergunta <span className="required">*</span>
@@ -178,7 +238,7 @@ const CreateThread = () => {
             disabled={loading}
             className="submit-btn"
           >
-            {loading ? 'Criando...' : 'Criar Pergunta'}
+            {loading ? 'Verificando e criando...' : 'Criar Pergunta'}
           </button>
         </div>
       </form>

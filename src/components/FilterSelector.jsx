@@ -18,6 +18,7 @@ const FilterSelector = ({
     const [filteredOptions, setFilteredOptions] = useState(options);
 
     useEffect(() => {
+        console.log('FilterSelector - options atualizadas:', options);
         if (searchable && searchTerm) {
             if (onSearch && typeof onSearch === 'function') {
                 onSearch(searchTerm);
@@ -33,6 +34,7 @@ const FilterSelector = ({
     }, [searchTerm, options, searchable, onSearch]);
 
     const handleOptionClick = (option) => {
+        console.log('Opção clicada:', option);
         if (multiple) {
             const newValue = value || [];
             if (newValue.includes(option.id)) {
@@ -59,7 +61,7 @@ const FilterSelector = ({
             if (selectedOptions.length === 1) {
                 return selectedOptions[0].name;
             }
-            // Mostrar os nomes dos primeiros itens selecionados em vez de só o número
+            // Mostrar os nomes dos primeiros itens selecionados
             if (selectedOptions.length <= 2) {
                 return selectedOptions.map(opt => opt.name).join(', ');
             }
@@ -87,7 +89,12 @@ const FilterSelector = ({
             <div className="select-wrapper">
                 <div 
                     className={`select-display ${isOpen ? 'open' : ''}`}
-                    onClick={() => !disabled && setIsOpen(!isOpen)}
+                    onClick={() => {
+                        if (!disabled) {
+                            console.log('Abrindo dropdown. Opções disponíveis:', options.length);
+                            setIsOpen(!isOpen);
+                        }
+                    }}
                 >
                     <span className="select-text">{getDisplayText()}</span>
                     <span className="select-arrow">▼</span>
@@ -121,7 +128,11 @@ const FilterSelector = ({
                                 ))
                             ) : (
                                 <div className="no-options">
-                                    {searchTerm ? 'Nenhum resultado encontrado' : 'Nenhuma opção disponível'}
+                                    {searchTerm 
+                                        ? 'Nenhum resultado encontrado' 
+                                        : options.length === 0 
+                                        ? 'Nenhuma opção disponível (verifique se o backend está rodando)' 
+                                        : 'Nenhuma opção disponível'}
                                 </div>
                             )}
                         </div>

@@ -27,9 +27,12 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
                 });
             }
 
-            // Se não há filtros, busca todas as matérias
+            // Busca matérias (com ou sem filtros)
             const endpoint = params.toString() ? `/filters/subjects?${params.toString()}` : '/filters/subjects';
+            console.log('Carregando matérias do endpoint:', endpoint);
+            
             const response = await api.get(endpoint);
+            console.log('Resposta de matérias:', response.data);
             
             // Convert string array to objects with id and name
             const subjectObjects = response.data.map(subject => ({
@@ -37,18 +40,19 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
                 name: subject
             }));
             
+            console.log('Matérias convertidas:', subjectObjects);
             setSubjectOptions(subjectObjects);
         } catch (error) {
             console.error('Error loading subjects:', error);
-            // Em caso de erro, mantém as opções atuais ou usa array vazio
+            // Em caso de erro, usa array vazio
             setSubjectOptions([]);
         } finally {
             setLoadingSubjects(false);
         }
     }, [filters.semester, filters.courses]);
 
-    const searchSubjects = useCallback(async () => {
-        if (!subjectSearchTerm.trim()) {
+    const searchSubjects = useCallback(async (searchTerm) => {
+        if (!searchTerm.trim()) {
             loadSubjects();
             return;
         }
@@ -56,7 +60,7 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
         setLoadingSubjects(true);
         try {
             const params = new URLSearchParams();
-            params.append('q', subjectSearchTerm);
+            params.append('q', searchTerm);
             
             // Adiciona filtros de contexto se existirem
             if (filters.semester) {
@@ -69,6 +73,7 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
                 });
             }
 
+            console.log('Buscando matérias com termo:', searchTerm);
             const response = await api.get(`/filters/subjects?${params.toString()}`);
             
             const subjectObjects = response.data.map(subject => ({
@@ -79,39 +84,35 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
             setSubjectOptions(subjectObjects);
         } catch (error) {
             console.error('Error searching subjects:', error);
-            // Em caso de erro na busca, filtra localmente
-            const filtered = subjectOptions.filter(subject =>
-                subject.name.toLowerCase().includes(subjectSearchTerm.toLowerCase())
-            );
-            setSubjectOptions(filtered);
+            setSubjectOptions([]);
         } finally {
             setLoadingSubjects(false);
         }
-    }, [subjectSearchTerm, filters.semester, filters.courses, loadSubjects, subjectOptions]);
+    }, [filters.semester, filters.courses, loadSubjects]);
 
     // Load subjects when component mounts and when semester or courses change
     useEffect(() => {
+        console.log('useEffect disparado - carregando matérias');
         loadSubjects();
     }, [loadSubjects]);
 
     // Search subjects when search term changes
     useEffect(() => {
         if (subjectSearchTerm) {
-            searchSubjects();
-        } else if (!subjectSearchTerm && (filters.semester || (filters.courses && filters.courses.length > 0))) {
-            loadSubjects();
+            console.log('Buscando com termo:', subjectSearchTerm);
+            searchSubjects(subjectSearchTerm);
         }
-    }, [subjectSearchTerm, filters.semester, filters.courses, loadSubjects, searchSubjects]);
+    }, [subjectSearchTerm, searchSubjects]);
 
     const handleFilterChange = (filterKey, value) => {
+        console.log('Filtro alterado:', filterKey, value);
         const newFilters = { ...filters, [filterKey]: value };
 
-        // Limpa matérias selecionadas quando filtros de contexto mudam
+        // Não limpa as matérias quando outros filtros mudam
+        // Apenas recarrega as opções disponíveis
         if (filterKey === 'semester' || filterKey === 'courses') {
-            // Apenas limpa se havia matérias selecionadas
-            if (newFilters.subjects && newFilters.subjects.length > 0) {
-                newFilters.subjects = [];
-            }
+            // As matérias selecionadas são mantidas
+            // O useEffect irá recarregar as opções disponíveis
         }
 
         setFilters(newFilters);
@@ -119,6 +120,7 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
     };
 
     const handleSubjectSearch = (searchTerm) => {
+        console.log('Termo de busca alterado:', searchTerm);
         setSubjectSearchTerm(searchTerm);
     };
 
@@ -134,18 +136,14 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
 
     const getSubjectPlaceholder = () => {
         if (loadingSubjects) {
-            return "Carregando...";
+            return "Carregando matérias...";
         }
         
-        if (filters.semester && filters.courses && filters.courses.length > 0) {
-            return `Matérias do ${filters.semester}º semestre para os cursos selecionados...`;
-        } else if (filters.semester) {
-            return `Matérias do ${filters.semester}º semestre...`;
-        } else if (filters.courses && filters.courses.length > 0) {
-            return "Matérias dos cursos selecionados...";
+        if (subjectOptions.length === 0) {
+            return "Nenhuma matéria disponível";
         }
         
-        return "Selecione as matérias...";
+        return "Selecione uma ou mais matérias...";
     };
 
     return (
@@ -193,19 +191,13 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
                             <div className="loading-text">Carregando matérias...</div>
                         )}
 
-                        {/* Mostra informação sobre o contexto atual das matérias */}
-                        {filterKey === 'subjects' && !loadingSubjects && subjectOptions.length === 0 && (
+                        {/* Informação sobre matérias disponíveis */}
+                        {filterKey === 'subjects' && !loadingSubjects && (
                             <div className="info-text">
-                                {filters.semester || (filters.courses && filters.courses.length > 0)
-                                    ? "Nenhuma matéria encontrada para os filtros selecionados."
-                                    : "Selecione um semestre ou curso para ver as matérias disponíveis."
+                                {subjectOptions.length > 0 
+                                    ? `${subjectOptions.length} matéria(s) disponível(eis)`
+                                    : "Nenhuma matéria encontrada. Verifique se o backend está rodando."
                                 }
-                            </div>
-                        )}
-
-                        {filterKey === 'subjects' && !loadingSubjects && subjectOptions.length > 0 && (
-                            <div className="info-text">
-                                {subjectOptions.length} matéria(s) disponível(eis)
                             </div>
                         )}
                     </div>

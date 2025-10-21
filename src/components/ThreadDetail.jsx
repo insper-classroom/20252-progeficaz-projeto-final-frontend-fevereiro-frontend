@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import FilterDisplay from './FilterDisplay';
 import { forumAPI } from '../services/api';
 import { extractErrorMessage } from '../utils/restfulHelpers';
+// Importar serviço de moderação
+import { verificarConteudo } from '../services/moderationService';
 import './ThreadDetail.css';
 
 const ThreadDetail = () => {
@@ -13,6 +15,8 @@ const ThreadDetail = () => {
   const [error, setError] = useState(null);
   const [newPost, setNewPost] = useState({ author: '', content: '' });
   const [submitting, setSubmitting] = useState(false);
+  // Estado para mensagem de moderação
+  const [moderationWarning, setModerationWarning] = useState(null);
 
   useEffect(() => {
     const fetchThread = async () => {
@@ -56,6 +60,31 @@ const ThreadDetail = () => {
 
     try {
       setSubmitting(true);
+      setModerationWarning(null); // Limpar avisos anteriores
+
+      // ====== MODERAÇÃO DE CONTEÚDO ======
+      // Verificar conteúdo da resposta antes de enviar
+      console.log('🔍 Verificando resposta com moderação...');
+      
+      const resultadoModeracao = await verificarConteudo(newPost.content);
+
+      // Se o conteúdo foi rejeitado, bloquear envio
+      if (!resultadoModeracao.aprovado) {
+        console.warn('⚠️ Resposta bloqueada pela moderação');
+        
+        // Mostrar mensagem de aviso
+        setModerationWarning({
+          mensagem: resultadoModeracao.mensagem || 
+                   'Sua resposta contém conteúdo impróprio e não pode ser publicada.'
+        });
+        
+        setSubmitting(false);
+        return; // Impedir envio
+      }
+
+      console.log('✅ Resposta aprovada pela moderação');
+      // ====== FIM DA MODERAÇÃO ======
+
       const response = await forumAPI.createPost(id, newPost.author.trim(), newPost.content.trim());
       console.log('Post created:', response.data);
       
@@ -161,6 +190,21 @@ const ThreadDetail = () => {
 
       <div className="new-post-section">
         <h3>Adicionar Resposta</h3>
+
+        {/* Mensagem de aviso de moderação */}
+        {moderationWarning && (
+          <div className="moderation-warning">
+            <div className="moderation-warning-icon">⚠️</div>
+            <div className="moderation-warning-content">
+              <strong>Resposta Bloqueada</strong>
+              <p>{moderationWarning.mensagem}</p>
+              <p className="moderation-hint">
+                Por favor, revise sua resposta e remova qualquer conteúdo impróprio antes de tentar novamente.
+              </p>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmitPost} className="new-post-form">
           <div className="form-group">
             <label>Seu nome:</label>
@@ -177,7 +221,13 @@ const ThreadDetail = () => {
             <label>Sua resposta:</label>
             <textarea
               value={newPost.content}
-              onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
+              onChange={(e) => {
+                setNewPost(prev => ({ ...prev, content: e.target.value }));
+                // Limpar aviso ao editar
+                if (moderationWarning) {
+                  setModerationWarning(null);
+                }
+              }}
               placeholder="Digite sua resposta"
               rows="6"
               required
@@ -185,7 +235,7 @@ const ThreadDetail = () => {
           </div>
           
           <button type="submit" disabled={submitting} className="submit-btn">
-            {submitting ? 'Enviando...' : 'Enviar Resposta'}
+            {submitting ? 'Verificando e enviando...' : 'Enviar Resposta'}
           </button>
         </form>
       </div>
