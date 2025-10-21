@@ -15,8 +15,7 @@ A React + Vite frontend for a forum application that communicates with a Flask A
 ### Prerequisites
 
 - Node.js (v14 or higher)
-- npm or yarn
-- The Flask backend running on `http://localhost:5000`
+- The backend running
 
 ### Installation
 
@@ -41,42 +40,8 @@ The frontend communicates with the following Flask API endpoints:
 - `GET /api/threads/:id` - Get a specific thread with posts
 - `POST /api/threads/:id/posts` - Create a post in a thread
 
-## Project Structure
-
-```
-src/
-├── components/
-│   ├── Header.jsx          # Navigation header
-│   ├── ThreadList.jsx      # List of all threads
-│   ├── ThreadDetail.jsx    # Thread view with posts and reply form
-│   ├── CreateThread.jsx    # Create new thread form
-│   └── *.css              # Component styles
-├── services/
-│   └── api.js             # API service functions
-├── App.jsx                # Main app component with routing
-├── main.jsx              # App entry point
-└── index.css             # Global styles
-```
 
 ## Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-## Technologies Used
-
-- React 19
-- Vite
-- React Router DOM
-- Axios
-- CSS3
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
