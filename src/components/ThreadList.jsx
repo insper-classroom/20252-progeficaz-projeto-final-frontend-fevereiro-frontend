@@ -13,6 +13,7 @@ const ThreadList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({
     semester: [],
     courses: [],
@@ -58,91 +59,99 @@ const ThreadList = () => {
     };
 
     const applyFiltersToThreads = () => {
-      if (!hasActiveFilters()) {
-        setFilteredThreads(threads);
-        return;
+      let filtered = threads;
+
+      // Apply search filter first
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase();
+        filtered = filtered.filter(thread => 
+          thread.title.toLowerCase().includes(searchLower)
+        );
       }
 
-      console.log('Applying filters:', activeFilters);
-      console.log('All threads:', threads);
+      // Apply category filters if active
+      if (hasActiveFilters()) {
+        console.log('Applying filters:', activeFilters);
+        console.log('All threads:', threads);
 
-      const filtered = threads.filter(thread => {
-        console.log('Checking thread:', thread);
-        
-        // Check semester filter
-        if (activeFilters.semester && activeFilters.semester.length > 0) {
-          // Normalize both values to numbers for comparison
-          const threadSemester = parseInt(thread.semester);
-          const hasMatchingSemester = activeFilters.semester.some(filterSemester => {
-            const normalizedFilterSemester = parseInt(filterSemester);
-            return threadSemester === normalizedFilterSemester;
-          });
+        filtered = filtered.filter(thread => {
+          console.log('Checking thread:', thread);
           
-          console.log('Semester check:', {
-            threadSemester,
-            activeFilterSemesters: activeFilters.semester,
-            hasMatch: hasMatchingSemester
-          });
-          
-          if (!hasMatchingSemester) {
-            return false;
+          // Check semester filter
+          if (activeFilters.semester && activeFilters.semester.length > 0) {
+            const threadSemester = parseInt(thread.semester);
+            const hasMatchingSemester = activeFilters.semester.some(filterSemester => {
+              const normalizedFilterSemester = parseInt(filterSemester);
+              return threadSemester === normalizedFilterSemester;
+            });
+            
+            console.log('Semester check:', {
+              threadSemester,
+              activeFilterSemesters: activeFilters.semester,
+              hasMatch: hasMatchingSemester
+            });
+            
+            if (!hasMatchingSemester) {
+              return false;
+            }
           }
-        }
 
-        // Check courses filter
-        if (activeFilters.courses && activeFilters.courses.length > 0) {
-          if (!thread.courses || !Array.isArray(thread.courses)) {
-            console.log('Thread has no courses array');
-            return false;
+          // Check courses filter
+          if (activeFilters.courses && activeFilters.courses.length > 0) {
+            if (!thread.courses || !Array.isArray(thread.courses)) {
+              console.log('Thread has no courses array');
+              return false;
+            }
+            
+            const hasMatchingCourse = thread.courses.some(threadCourse => 
+              activeFilters.courses.includes(threadCourse)
+            );
+            
+            console.log('Courses check:', {
+              threadCourses: thread.courses,
+              activeFilterCourses: activeFilters.courses,
+              hasMatch: hasMatchingCourse
+            });
+            
+            if (!hasMatchingCourse) {
+              return false;
+            }
           }
-          
-          const hasMatchingCourse = thread.courses.some(threadCourse => 
-            activeFilters.courses.includes(threadCourse)
-          );
-          
-          console.log('Courses check:', {
-            threadCourses: thread.courses,
-            activeFilterCourses: activeFilters.courses,
-            hasMatch: hasMatchingCourse
-          });
-          
-          if (!hasMatchingCourse) {
-            return false;
-          }
-        }
 
-        // Check subjects filter
-        if (activeFilters.subjects && activeFilters.subjects.length > 0) {
-          if (!thread.subjects || !Array.isArray(thread.subjects)) {
-            console.log('Thread has no subjects array');
-            return false;
+          // Check subjects filter
+          if (activeFilters.subjects && activeFilters.subjects.length > 0) {
+            if (!thread.subjects || !Array.isArray(thread.subjects)) {
+              console.log('Thread has no subjects array');
+              return false;
+            }
+            
+            const hasMatchingSubject = thread.subjects.some(threadSubject => 
+              activeFilters.subjects.includes(threadSubject)
+            );
+            
+            console.log('Subjects check:', {
+              threadSubjects: thread.subjects,
+              activeFilterSubjects: activeFilters.subjects,
+              hasMatch: hasMatchingSubject
+            });
+            
+            if (!hasMatchingSubject) {
+              return false;
+            }
           }
-          
-          const hasMatchingSubject = thread.subjects.some(threadSubject => 
-            activeFilters.subjects.includes(threadSubject)
-          );
-          
-          console.log('Subjects check:', {
-            threadSubjects: thread.subjects,
-            activeFilterSubjects: activeFilters.subjects,
-            hasMatch: hasMatchingSubject
-          });
-          
-          if (!hasMatchingSubject) {
-            return false;
-          }
-        }
 
-        console.log('Thread passed all filters');
-        return true;
-      });
+          console.log('Thread passed all filters');
+          return true;
+        });
 
-      console.log('Filtered threads:', filtered);
+        console.log('Filtered threads:', filtered);
+      }
+
       setFilteredThreads(filtered);
     };
 
     applyFiltersToThreads();
-  }, [threads, activeFilters]);
+  }, [threads, activeFilters, searchTerm]);
 
   const hasActiveFilters = () => {
     return (activeFilters.semester && activeFilters.semester.length > 0) || 
@@ -161,6 +170,11 @@ const ThreadList = () => {
       subjects: []
     };
     setActiveFilters(clearedFilters);
+    setSearchTerm('');
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
   };
 
   if (loading) return <LoadingSpinner message="Carregando perguntas..." />;
@@ -188,10 +202,45 @@ const ThreadList = () => {
         </div>
       </div>
 
-      {hasActiveFilters() && (
+      {/* Search Bar */}
+      <div className="search-section">
+        <div className="search-bar">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Pesquisar perguntas por título..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button 
+              className="clear-search-button"
+              onClick={handleClearSearch}
+              title="Limpar pesquisa"
+            >
+              ✕
+            </button>
+          )}
+          <span className="search-icon">🔍</span>
+        </div>
+        {searchTerm && (
+          <div className="search-info">
+            Pesquisando por: <strong>"{searchTerm}"</strong>
+          </div>
+        )}
+      </div>
+
+      {(hasActiveFilters() || searchTerm) && (
         <div className="active-filters-section">
           <div className="active-filters-header">
-            <h3>Filtros Ativos</h3>
+            <h3>
+              {hasActiveFilters() && searchTerm 
+                ? 'Filtros e Pesquisa Ativos'
+                : hasActiveFilters() 
+                ? 'Filtros Ativos'
+                : 'Pesquisa Ativa'
+              }
+            </h3>
             <button 
               className="clear-all-filters"
               onClick={handleClearAllFilters}
@@ -199,7 +248,7 @@ const ThreadList = () => {
               Limpar Todos
             </button>
           </div>
-          <FilterDisplay filters={activeFilters} />
+          {hasActiveFilters() && <FilterDisplay filters={activeFilters} />}
         </div>
       )}
 
@@ -207,7 +256,7 @@ const ThreadList = () => {
         {filteredThreads.length > 0 ? (
           <>
             <div className="threads-count">
-              {hasActiveFilters() 
+              {(hasActiveFilters() || searchTerm)
                 ? `${filteredThreads.length} de ${threads.length} pergunta(s) encontrada(s)`
                 : `${threads.length} pergunta(s) no total`
               }
@@ -227,29 +276,25 @@ const ThreadList = () => {
                         </span>
                       )}
                     </div>
-                    
-                    {/* 
-                      Dados dos filtros estão sendo mantidos na thread para filtragem,
-                      mas não são exibidos visualmente na página inicial conforme solicitado.
-                      Os filtros estão disponíveis em:
-                      - thread.semester
-                      - thread.courses (array)
-                      - thread.subjects (array)
-                    */}
                   </Link>
                 </div>
               ))}
             </div>
           </>
-        ) : hasActiveFilters() ? (
+        ) : (hasActiveFilters() || searchTerm) ? (
           <div className="no-threads-filtered">
             <h3>Nenhuma pergunta encontrada</h3>
-            <p>Não foram encontradas perguntas que correspondem aos filtros selecionados.</p>
+            <p>
+              {searchTerm 
+                ? `Não foram encontradas perguntas com o título contendo "${searchTerm}".`
+                : 'Não foram encontradas perguntas que correspondem aos filtros selecionados.'
+              }
+            </p>
             <button 
               className="clear-filters-btn"
               onClick={handleClearAllFilters}
             >
-              Limpar Filtros
+              {searchTerm && hasActiveFilters() ? 'Limpar Pesquisa e Filtros' : searchTerm ? 'Limpar Pesquisa' : 'Limpar Filtros'}
             </button>
           </div>
         ) : (

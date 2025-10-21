@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import FilterSelector from './FilterSelector';
 import { FILTER_CONFIG, getFilterOrder, shouldShowFilter } from '../config/filterConfig';
 import { api } from '../services/api';
@@ -10,21 +10,7 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
     const [loadingSubjects, setLoadingSubjects] = useState(false);
     const [subjectSearchTerm, setSubjectSearchTerm] = useState('');
 
-    // Load subjects when component mounts and when semester or courses change
-    useEffect(() => {
-        loadSubjects();
-    }, [filters.semester, filters.courses]);
-
-    // Search subjects when search term changes
-    useEffect(() => {
-        if (subjectSearchTerm) {
-            searchSubjects();
-        } else if (!subjectSearchTerm && (filters.semester || (filters.courses && filters.courses.length > 0))) {
-            loadSubjects();
-        }
-    }, [subjectSearchTerm]);
-
-    const loadSubjects = async () => {
+    const loadSubjects = useCallback(async () => {
         setLoadingSubjects(true);
         try {
             const params = new URLSearchParams();
@@ -59,9 +45,9 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
         } finally {
             setLoadingSubjects(false);
         }
-    };
+    }, [filters.semester, filters.courses]);
 
-    const searchSubjects = async () => {
+    const searchSubjects = useCallback(async () => {
         if (!subjectSearchTerm.trim()) {
             loadSubjects();
             return;
@@ -101,7 +87,21 @@ const QuestionFilters = ({ onChange, initialValues = {}, errors = {} }) => {
         } finally {
             setLoadingSubjects(false);
         }
-    };
+    }, [subjectSearchTerm, filters.semester, filters.courses, loadSubjects, subjectOptions]);
+
+    // Load subjects when component mounts and when semester or courses change
+    useEffect(() => {
+        loadSubjects();
+    }, [loadSubjects]);
+
+    // Search subjects when search term changes
+    useEffect(() => {
+        if (subjectSearchTerm) {
+            searchSubjects();
+        } else if (!subjectSearchTerm && (filters.semester || (filters.courses && filters.courses.length > 0))) {
+            loadSubjects();
+        }
+    }, [subjectSearchTerm, filters.semester, filters.courses, loadSubjects, searchSubjects]);
 
     const handleFilterChange = (filterKey, value) => {
         const newFilters = { ...filters, [filterKey]: value };
