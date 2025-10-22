@@ -2,12 +2,19 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import { useAuth } from '~/providers'
 import { useThreads, useFiltersConfig } from '~/hooks'
+import {
+  useUpvoteThread,
+  useDownvoteThread,
+  useRemoveThreadVote,
+} from '~/hooks/use-votes'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Skeleton } from '~/components/ui/skeleton'
 import { Separator } from '~/components/ui/separator'
 import { Checkbox } from '~/components/ui/checkbox'
 import { ScrollArea } from '~/components/ui/scroll-area'
+import { VoteButtons } from '~/components/VoteButtons'
+import { CreateThreadDialog } from '~/components/CreateThreadDialog'
 import { Search, LogOut, User, Filter, X } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Route } from './+types/home'
@@ -27,6 +34,11 @@ export default function Home() {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({})
+
+  // Vote mutations
+  const upvoteThread = useUpvoteThread()
+  const downvoteThread = useDownvoteThread()
+  const removeThreadVote = useRemoveThreadVote()
 
   const handleLogout = () => {
     logout()
@@ -214,6 +226,7 @@ export default function Home() {
                     </p>
                   )}
                 </div>
+                <CreateThreadDialog />
               </div>
 
               <ScrollArea className="flex-1 min-h-0 h-full">
@@ -238,24 +251,52 @@ export default function Home() {
                       {filteredThreads?.map((thread) => (
                         <div
                           key={thread.id}
-                          className="group py-4 px-5 rounded-lg border bg-card hover:bg-accent/5 hover:shadow-sm transition-all cursor-pointer"
+                          className="group py-4 px-5 rounded-lg border bg-card hover:bg-accent/5 hover:shadow-sm transition-all"
                         >
-                          <h3 className="font-medium text-base mb-1 group-hover:text-primary transition-colors">
-                            {thread.title}
-                          </h3>
-                          {thread.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                              {thread.description}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground/80">
-                            <span>
-                              {new Date(thread.created_at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
-                            </span>
+                          <div className="flex gap-3">
+                            <VoteButtons
+                              score={thread.score}
+                              userVote={thread.user_vote}
+                              onUpvote={() => upvoteThread.mutate(thread.id)}
+                              onDownvote={() => downvoteThread.mutate(thread.id)}
+                              onRemoveVote={() => removeThreadVote.mutate(thread.id)}
+                              isLoading={
+                                upvoteThread.isPending ||
+                                downvoteThread.isPending ||
+                                removeThreadVote.isPending
+                              }
+                              size="sm"
+                            />
+                            <div
+                              className="flex-1 cursor-pointer"
+                              onClick={() => navigate(`/threads/${thread.id}`)}
+                            >
+                              <h3 className="font-medium text-base mb-1 group-hover:text-primary transition-colors">
+                                {thread.title}
+                              </h3>
+                              {thread.description && (
+                                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                                  {thread.description}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground/80">
+                                <span>
+                                  {new Date(thread.created_at).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  })}
+                                </span>
+                                {thread.posts && thread.posts.length > 0 && (
+                                  <>
+                                    <span>•</span>
+                                    <span>
+                                      {thread.posts.length} {thread.posts.length === 1 ? 'comentário' : 'comentários'}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}

@@ -7,4 +7,7 @@ export default [
   // Auth routes
   route("login", "routes/login.tsx"),
   route("register", "routes/register.tsx"),
+
+  // Thread routes
+  route("threads/:threadId", "routes/threads.$threadId.tsx"),
 ] satisfies RouteConfig;

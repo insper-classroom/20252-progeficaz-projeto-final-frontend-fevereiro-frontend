@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Navigate, useNavigate, Link } from 'react-router'
-import { useRegister } from '~/hooks'
+import { useRegister, useLogin } from '~/hooks'
 import { useAuth } from '~/providers'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from '~/components/ui/card'
-import { Alert, AlertDescription } from '~/components/ui/alert'
 import { toast } from 'sonner'
 import type { Route } from './+types/register'
 
@@ -26,12 +25,15 @@ export function meta({}: Route.MetaArgs) {
 export default function Register() {
   const navigate = useNavigate()
   const { isAuthenticated, login: setAuth } = useAuth()
-  const { mutate: register, isPending, error } = useRegister()
+  const { mutate: register, isPending: isRegistering } = useRegister()
+  const { mutate: login, isPending: isLoggingIn } = useLogin()
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
+
+  const isPending = isRegistering || isLoggingIn
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />
@@ -39,20 +41,36 @@ export default function Register() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    // First, register the user
     register(formData, {
-      onSuccess: (data) => {
-        setAuth(data.access_token, data.user)
-        toast.success('Account created successfully!', {
-          description: `Welcome, ${data.user.email}`,
+      onSuccess: () => {
+        toast.success('Conta criada com sucesso!')
+
+        // Then automatically log in with the same credentials
+        login(formData, {
+          onSuccess: (data) => {
+            setAuth(data.access_token, data.user)
+            toast.success('Login realizado!', {
+              description: `Bem-vindo, ${data.user.email}`,
+            })
+            navigate('/')
+          },
+          onError: (error: any) => {
+            // If auto-login fails, redirect to login page
+            toast.info('Por favor, faça login com suas credenciais', {
+              description: 'Sua conta foi criada com sucesso.',
+            })
+            navigate('/login')
+          },
         })
-        navigate('/')
       },
       onError: (error: any) => {
-        toast.error('Registration failed', {
+        toast.error('Falha no registro', {
           description:
             error?.response?.data?.message ||
             error?.message ||
-            'Failed to create account. Please try again.',
+            'Falha ao criar conta. Tente novamente.',
         })
       },
     })
@@ -99,14 +117,6 @@ export default function Register() {
                 }
               />
             </div>
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {error.message || 'Failed to register. Please try again.'}
-                </AlertDescription>
-              </Alert>
-            )}
 
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? 'Creating account...' : 'Create account'}

@@ -1,7 +1,7 @@
 export interface User {
   id: string
+  username: string
   email: string
-  created_at: string
 }
 
 export interface RegisterDto {
@@ -12,6 +12,11 @@ export interface RegisterDto {
 export interface LoginDto {
   email: string
   password: string
+}
+
+export interface LoginResponse {
+  access_token: string
+  message?: string
 }
 
 export interface AuthResponse {
