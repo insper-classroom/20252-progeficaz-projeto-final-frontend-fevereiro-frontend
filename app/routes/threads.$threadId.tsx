@@ -118,20 +118,7 @@ export default function ThreadPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
-          <div className="flex gap-4">
-            <VoteButtons
-              score={thread.score}
-              userVote={thread.user_vote}
-              onUpvote={() => upvoteThread.mutate(threadId!)}
-              onDownvote={() => downvoteThread.mutate(threadId!)}
-              onRemoveVote={() => removeThreadVote.mutate(threadId!)}
-              isLoading={
-                upvoteThread.isPending ||
-                downvoteThread.isPending ||
-                removeThreadVote.isPending
-              }
-              size="lg"
-            />
+          <div className="flex flex-col gap-4">
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2">{thread.title}</h1>
               {thread.description && (
@@ -144,6 +131,23 @@ export default function ThreadPage() {
                   year: 'numeric',
                 })}
               </p>
+            </div>
+
+            {/* Botões de upvote e downvote */}
+            <div className="flex gap-3">
+              <VoteButtons
+                score={thread.score}
+                userVote={thread.user_vote}
+                onUpvote={() => upvoteThread.mutate(threadId!)}
+                onDownvote={() => downvoteThread.mutate(threadId!)}
+                onRemoveVote={() => removeThreadVote.mutate(threadId!)}
+                isLoading={
+                  upvoteThread.isPending ||
+                  downvoteThread.isPending ||
+                  removeThreadVote.isPending
+                }
+                size="lg"
+              />
             </div>
           </div>
         </div>

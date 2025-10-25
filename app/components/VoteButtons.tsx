@@ -20,7 +20,7 @@ export function VoteButtons({
   onDownvote,
   onRemoveVote,
   isLoading = false,
-  orientation = 'vertical',
+  orientation = 'horizontal',
   size = 'default',
 }: VoteButtonsProps) {
   const handleUpvote = (e: React.MouseEvent) => {

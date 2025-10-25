@@ -24,8 +24,8 @@ export function meta({}: Route.MetaArgs) {
 
 
   return [
-    { title: 'Fevereiro' },
-    { name: 'description', content: 'Fevereiro - Thread Management System' },
+    { title: 'Insper quest ' },
+    { name: 'description', content: 'Insper quest  - Thread Management System' },
   ]
 }
 
@@ -87,8 +87,13 @@ export default function Home() {
         <div className="container max-w-7xl mx-auto">
           <div className="flex h-16 items-center justify-between gap-6">
             {/* App Name */}
-            <div className="flex items-center shrink-0">
-              <h1 className="text-2xl font-bold">Fevereiro</h1>
+            <div className="flex items-center shrink-0 gap-2">
+              <img
+                src="app/components/img/logo.png" 
+                alt="Insper Quest Logo"
+                className="h-10 w-10 rounded-full object-cover" // Faz a imagem ficar circular
+              />
+              <h1 className="text-2xl font-bold">Insper quest</h1>
             </div>
 
             {/* Search Bar */}
@@ -202,7 +207,7 @@ export default function Home() {
             </aside>
 
             {/* Área Principal */}
-            <section className="flex flex-col h-full min-h-0 border-l border-r pl-8 pr-8">
+            <section className="flex flex-col h-full min-h-0 border-l  pl-8 pr-8">
               <div className="flex items-baseline justify-between border-b pb-3 mb-4 shrink-0">
                 <div>
                   <h2 className="text-xl font-semibold">
@@ -254,6 +259,7 @@ export default function Home() {
                                 removeThreadVote.isPending
                               }
                               size="sm"
+                              orientation="vertical"
                             />
                             <div
                               className="flex-1 cursor-pointer"
@@ -283,6 +289,11 @@ export default function Home() {
                                     </span>
                                   </>
                                 )}
+                                {/* Adicionando o autor */}
+                                <span>•</span>
+                                <span className="font-medium text-muted-foreground">
+                                  Por: {thread.author || 'Desconhecido'}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -296,7 +307,40 @@ export default function Home() {
 
             {/* Sidebar Direita */}
             <aside className="flex flex-col h-full min-h-0 border-l pl-4">
-              {/* Conteúdo vazio */}
+              <div className="flex flex-col items-center gap-4 py-6">
+                {/* Foto do Usuário */}
+                <div className="relative w-24 h-24 rounded-full bg-muted">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    title="Adicionar foto"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        // Lógica para salvar a foto do usuário
+                        console.log("Foto selecionada:", file);
+                      }
+                    }}
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                    Adicionar Foto
+                  </span>
+                </div>
+
+                {/* Nome do Usuário */}
+                <h3 className="text-lg font-semibold">{user?.name || "Usuário"}</h3>
+
+                {/* Estatísticas */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="text-sm text-muted-foreground">
+                    Perguntas feitas: <span className="font-medium">{user?.questionsAsked || 0}</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Perguntas respondidas: <span className="font-medium">{user?.questionsAnswered || 0}</span>
+                  </div>
+                </div>
+              </div>
             </aside>
           </div>
         </div>
