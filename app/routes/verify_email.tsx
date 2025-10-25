@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/com
 import { Alert, AlertTitle, AlertDescription } from "~/components/ui/alert"
 import { apiClient } from "~/lib/api-client"
 import { useResendVerificationEmail, useVerifyEmail } from "~/hooks"
-import { Touchpad } from "lucide-react"
+import { Car, Touchpad } from "lucide-react"
 import { toast } from "sonner"
 
 export default function VerifyEmailPage() {
@@ -14,6 +14,7 @@ export default function VerifyEmailPage() {
   const navigate = useNavigate()
 
   const [step, setStep] = useState<"idle" | "sent">("idle")
+  const [first, setFirst] = useState<boolean>(true)
   const [email, setEmail] = useState<string>("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,12 +37,13 @@ export default function VerifyEmailPage() {
       const payload = { email: targetEmail ?? email }
       resendEmail(payload, {
         onSuccess: (data) => {
-            setSuccessMessage(data.message || "Email de verificação enviado com sucesso")
-            setStep("sent")
-            setLoading(false)
-          }
-        ,
+          setFirst(false)
+          setSuccessMessage(data.message || "Email de verificação enviado com sucesso")
+          setStep("sent")
+          setLoading(false)
+        },
         onError: (err: any) => {
+          setFirst(false)
         const errorMessage = typeof err?.response?.data?.error === "string"
                 ? err.response.data.error
                 : err?.response?.data?.error?.message ??
@@ -132,7 +134,17 @@ export default function VerifyEmailPage() {
 
   // Fallback: original send/resend flow when no token in URL
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center flex-col p-4">
+      {first ? (
+        <Card className="w-full max-w-lg mb-6">
+          <CardHeader>
+            <CardTitle>Verifique seu email</CardTitle>
+            <CardDescription>
+              Por favor, verifique seu email para confirmar sua conta. Se você não recebeu o email, você pode reenviá-lo abaixo.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : null}
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>Reenvie o email de confirmação</CardTitle>
@@ -180,6 +192,11 @@ export default function VerifyEmailPage() {
                   }}
                 >
                   Clear
+                </Button>
+              </div>
+              <div className="flex gap-2 justify-between mt-4">
+                <Button variant="link" onClick={() => navigate("/")}>
+                  Voltar
                 </Button>
               </div>
             </>
