@@ -12,12 +12,8 @@ import { VoteButtons } from '~/components/VoteButtons'
 import { useCreatePost } from '~/hooks/use-posts'
 import { useThread } from '~/hooks/use-threads'
 import {
-  useDownvotePost,
-  useDownvoteThread,
-  useRemovePostVote,
-  useRemoveThreadVote,
-  useUpvotePost,
-  useUpvoteThread,
+  useDownvoteObj,
+  useUpvoteObj,
 } from '~/hooks/use-votes'
 import { useAuth } from '~/providers'
 
@@ -31,12 +27,8 @@ export default function ThreadPage() {
   const createPost = useCreatePost()
 
   // Vote mutations
-  const upvoteThread = useUpvoteThread()
-  const downvoteThread = useDownvoteThread()
-  const removeThreadVote = useRemoveThreadVote()
-  const upvotePost = useUpvotePost()
-  const downvotePost = useDownvotePost()
-  const removePostVote = useRemovePostVote()
+  const upvoteObj = useUpvoteObj()
+  const downvoteObj = useDownvoteObj()
 
   if (!isAuthenticated) {
     navigate('/login')
@@ -122,13 +114,11 @@ export default function ThreadPage() {
             <VoteButtons
               score={thread.score}
               userVote={thread.user_vote}
-              onUpvote={() => upvoteThread.mutate(threadId!)}
-              onDownvote={() => downvoteThread.mutate(threadId!)}
-              onRemoveVote={() => removeThreadVote.mutate(threadId!)}
+              onUpvote={() => upvoteObj.mutate({  postId: threadId!, objType: "threads" })}
+              onDownvote={() => downvoteObj.mutate({  postId: threadId!, objType: "threads" })}
               isLoading={
-                upvoteThread.isPending ||
-                downvoteThread.isPending ||
-                removeThreadVote.isPending
+                upvoteObj.isPending ||
+                downvoteObj.isPending
               }
               size="lg"
             />
@@ -209,13 +199,11 @@ export default function ThreadPage() {
                         <VoteButtons
                           score={post.score}
                           userVote={post.user_vote}
-                          onUpvote={() => upvotePost.mutate(post.id)}
-                          onDownvote={() => downvotePost.mutate(post.id)}
-                          onRemoveVote={() => removePostVote.mutate(post.id)}
+                          onUpvote={() => upvoteObj.mutate({ postId: post.id, objType: "posts" })}
+                          onDownvote={() => downvoteObj.mutate({ postId: post.id, objType: "posts" })}
                           isLoading={
-                            upvotePost.isPending ||
-                            downvotePost.isPending ||
-                            removePostVote.isPending
+                            upvoteObj.isPending ||
+                            downvoteObj.isPending
                           }
                           size="sm"
                         />

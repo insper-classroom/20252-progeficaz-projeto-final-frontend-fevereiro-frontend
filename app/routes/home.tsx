@@ -3,9 +3,8 @@ import { Navigate, useNavigate } from 'react-router'
 import { useAuth } from '~/providers'
 import { useThreads, useFiltersConfig } from '~/hooks'
 import {
-  useUpvoteThread,
-  useDownvoteThread,
-  useRemoveThreadVote,
+  useUpvoteObj,
+  useDownvoteObj,
 } from '~/hooks/use-votes'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -36,9 +35,8 @@ export default function Home() {
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({})
 
   // Vote mutations
-  const upvoteThread = useUpvoteThread()
-  const downvoteThread = useDownvoteThread()
-  const removeThreadVote = useRemoveThreadVote()
+  const upvoteObj = useUpvoteObj()
+  const downvoteObj = useDownvoteObj()
 
   const handleLogout = () => {
     logout()
@@ -257,13 +255,11 @@ export default function Home() {
                             <VoteButtons
                               score={thread.score}
                               userVote={thread.user_vote}
-                              onUpvote={() => upvoteThread.mutate(thread.id)}
-                              onDownvote={() => downvoteThread.mutate(thread.id)}
-                              onRemoveVote={() => removeThreadVote.mutate(thread.id)}
+                              onUpvote={() => upvoteObj.mutate({ postId: thread.id, objType: "threads" })}
+                              onDownvote={() => downvoteObj.mutate({ postId: thread.id, objType: "threads" })}
                               isLoading={
-                                upvoteThread.isPending ||
-                                downvoteThread.isPending ||
-                                removeThreadVote.isPending
+                                upvoteObj.isPending ||
+                                downvoteObj.isPending
                               }
                               size="sm"
                             />

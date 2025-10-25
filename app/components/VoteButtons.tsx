@@ -7,7 +7,6 @@ interface VoteButtonsProps {
   userVote?: 'upvote' | 'downvote' | null
   onUpvote: () => void
   onDownvote: () => void
-  onRemoveVote: () => void
   isLoading?: boolean
   orientation?: 'horizontal' | 'vertical'
   size?: 'sm' | 'default' | 'lg'
@@ -18,28 +17,19 @@ export function VoteButtons({
   userVote,
   onUpvote,
   onDownvote,
-  onRemoveVote,
   isLoading = false,
   orientation = 'vertical',
-  size = 'default',
+  size = 'default'
 }: VoteButtonsProps) {
   const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (userVote === 'upvote') {
-      onRemoveVote()
-    } else {
-      onUpvote()
-    }
-  }
+    onUpvote()
+}
 
   const handleDownvote = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (userVote === 'downvote') {
-      onRemoveVote()
-    } else {
-      onDownvote()
-    }
-  }
+    onDownvote()
+}
 
   const buttonSize = size === 'sm' ? 'icon-sm' : size === 'lg' ? 'icon-lg' : 'icon'
   const iconSize = size === 'sm' ? 'h-3 w-3' : size === 'lg' ? 'h-5 w-5' : 'h-4 w-4'
@@ -85,5 +75,4 @@ export function VoteButtons({
         <ThumbsDown className={iconSize} />
       </Button>
     </div>
-  )
-}
+  )}
