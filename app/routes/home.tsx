@@ -16,10 +16,13 @@ import { ScrollArea } from '~/components/ui/scroll-area'
 import { VoteButtons } from '~/components/VoteButtons'
 import { CreateThreadDialog } from '~/components/CreateThreadDialog'
 import { Search, LogOut, User, Filter, X } from 'lucide-react'
+import { GalleryVerticalEnd } from "lucide-react"
 import { toast } from 'sonner'
 import type { Route } from './+types/home'
 
 export function meta({}: Route.MetaArgs) {
+
+
   return [
     { title: 'Fevereiro' },
     { name: 'description', content: 'Fevereiro - Thread Management System' },
@@ -120,8 +123,9 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex-1 overflow-hidden">
         <div className="container max-w-7xl mx-auto py-8 h-[calc(100vh-8rem)]">
-          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 h-full">
-            {/* Filters Sidebar */}
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-8 h-full">
+            
+            {/* Sidebar Esquerda */}
             <aside className="flex flex-col h-full min-h-0">
               <div className="flex items-center justify-between mb-4 shrink-0">
                 <div className="flex items-center gap-2">
@@ -145,76 +149,60 @@ export default function Home() {
 
               <ScrollArea className="flex-1 min-h-0">
                 <div className="space-y-6 pr-4 pb-4">
-                  {filtersLoading ? (
-                    <>
-                      <Skeleton className="h-20 w-full" />
-                      <Skeleton className="h-20 w-full" />
-                      <Skeleton className="h-20 w-full" />
-                    </>
-                  ) : filtersConfig?.filters && filtersConfig.filters.length > 0 ? (
-                    filtersConfig.filters.map((filter, index) => (
-                      <div key={index} className="space-y-3">
-                        <h3 className="text-sm font-medium text-foreground/90">
-                          {filter.label}
-                        </h3>
-                        <div className="space-y-2.5">
-                          {filter.options.map((option) => {
-                            const isSelected = activeFilters[filter.type]?.includes(
-                              option.value
-                            )
-                            return (
-                              <div
-                                key={option.id}
-                                className="flex items-center space-x-2.5"
-                              >
-                                <Checkbox
-                                  id={`${filter.type}-${option.id}`}
-                                  checked={isSelected || false}
-                                  onCheckedChange={(checked) => {
-                                    setActiveFilters((prev) => {
-                                      const current = prev[filter.type] || []
-                                      if (checked) {
-                                        return {
-                                          ...prev,
-                                          [filter.type]: [...current, option.value],
-                                        }
-                                      } else {
-                                        return {
-                                          ...prev,
-                                          [filter.type]: current.filter(
-                                            (v) => v !== option.value
-                                          ),
-                                        }
-                                      }
-                                    })
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`${filter.type}-${option.id}`}
-                                  className="text-sm cursor-pointer select-none"
-                                >
-                                  {option.label}
-                                </label>
-                              </div>
-                            )
-                          })}
-                        </div>
-                        {index < filtersConfig.filters.length - 1 && (
-                          <Separator className="my-4" />
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No filters available
-                    </p>
-                  )}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-foreground/90">
+                      Áreas de Interesse
+                    </h3>
+                    <div className="space-y-2.5">
+                      {[
+                        { id: "computacao", label: "Ciência da Computação" },
+                        { id: "engenharias", label: "Engenharias" },
+                        { id: "economia", label: "Economia" },
+                        { id: "administracao", label: "Administração" },
+                      ].map((filter) => {
+                        const isSelected = activeFilters["area"]?.includes(filter.id)
+                        return (
+                          <div
+                            key={filter.id}
+                            className="flex items-center space-x-2.5"
+                          >
+                            <Checkbox
+                              id={`area-${filter.id}`}
+                              checked={isSelected || false}
+                              onCheckedChange={(checked) => {
+                                setActiveFilters((prev) => {
+                                  const current = prev["area"] || []
+                                  if (checked) {
+                                    return {
+                                      ...prev,
+                                      area: [...current, filter.id],
+                                    }
+                                  } else {
+                                    return {
+                                      ...prev,
+                                      area: current.filter((v) => v !== filter.id),
+                                    }
+                                  }
+                                })
+                              }}
+                            />
+                            <label
+                              htmlFor={`area-${filter.id}`}
+                              className="text-sm cursor-pointer select-none"
+                            >
+                              {filter.label}
+                            </label>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
               </ScrollArea>
             </aside>
 
-            {/* Main Content Area */}
-            <section className="flex flex-col h-full min-h-0 border-l pl-8">
+            {/* Área Principal */}
+            <section className="flex flex-col h-full min-h-0 border-l border-r pl-8 pr-8">
               <div className="flex items-baseline justify-between border-b pb-3 mb-4 shrink-0">
                 <div>
                   <h2 className="text-xl font-semibold">
@@ -305,6 +293,11 @@ export default function Home() {
                 </div>
               </ScrollArea>
             </section>
+
+            {/* Sidebar Direita */}
+            <aside className="flex flex-col h-full min-h-0 border-l pl-4">
+              {/* Conteúdo vazio */}
+            </aside>
           </div>
         </div>
       </main>
