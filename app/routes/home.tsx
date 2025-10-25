@@ -35,8 +35,8 @@ export default function Home() {
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({})
 
   // Vote mutations
-  const upvoteObj = useUpvoteObj()
-  const downvoteObj = useDownvoteObj()
+  const { mutate: upvoteObj, isPending: isUpvoting } = useUpvoteObj()
+  const { mutate: downvoteObj, isPending: isDownvoting } = useDownvoteObj()
 
   const handleLogout = () => {
     logout()
@@ -255,11 +255,11 @@ export default function Home() {
                             <VoteButtons
                               score={thread.score}
                               userVote={thread.user_vote}
-                              onUpvote={() => upvoteObj.mutate({ postId: thread.id, objType: "threads" })}
-                              onDownvote={() => downvoteObj.mutate({ postId: thread.id, objType: "threads" })}
+                              onUpvote={() => upvoteObj({ postId: thread.id, objType: "threads" })}
+                              onDownvote={() => downvoteObj({ postId: thread.id, objType: "threads" })}
                               isLoading={
-                                upvoteObj.isPending ||
-                                downvoteObj.isPending
+                                isUpvoting ||
+                                isDownvoting
                               }
                               size="sm"
                             />

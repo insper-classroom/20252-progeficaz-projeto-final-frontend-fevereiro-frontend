@@ -23,12 +23,16 @@ export function VoteButtons({
 }: VoteButtonsProps) {
   const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (!isLoading) {
     onUpvote()
+    }
 }
 
   const handleDownvote = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onDownvote()
+    if (!isLoading) {
+      onDownvote()
+    }
 }
 
   const buttonSize = size === 'sm' ? 'icon-sm' : size === 'lg' ? 'icon-lg' : 'icon'
