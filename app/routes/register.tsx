@@ -45,25 +45,10 @@ export default function Register() {
     // First, register the user
     register(formData, {
       onSuccess: () => {
-        toast.success('Conta criada com sucesso!')
+        toast.success('Conta registrada, enviando email de verificação!')
 
         // Then automatically log in with the same credentials
-        login(formData, {
-          onSuccess: (data) => {
-            setAuth(data.access_token, data.user)
-            toast.success('Login realizado!', {
-              description: `Bem-vindo, ${data.user.email}`,
-            })
-            navigate('/')
-          },
-          onError: (error: any) => {
-            // If auto-login fails, redirect to login page
-            toast.info('Por favor, faça login com suas credenciais', {
-              description: 'Sua conta foi criada com sucesso.',
-            })
-            navigate('/login')
-          },
-        })
+        navigate('/verify')
       },
       onError: (error: any) => {
         toast.error('Falha no registro', {

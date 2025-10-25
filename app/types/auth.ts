@@ -23,3 +23,11 @@ export interface AuthResponse {
   access_token: string
   user: User
 }
+
+export interface VerifyEmailDto {
+  authToken: string
+}
+
+export interface ResendVerificationEmailDto {
+  email: string
+}

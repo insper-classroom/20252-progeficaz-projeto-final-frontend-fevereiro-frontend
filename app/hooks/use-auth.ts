@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { authService } from '~/services'
-import type { RegisterDto, LoginDto, AuthResponse } from '~/types'
+import type { RegisterDto, LoginDto, AuthResponse, ResendVerificationEmailDto, VerifyEmailDto } from '~/types'
 
 export function useRegister() {
   return useMutation({
@@ -30,5 +30,17 @@ export function useLogin() {
       localStorage.setItem('access_token', data.access_token)
       localStorage.setItem('user', JSON.stringify(data.user))
     },
+  })
+}
+
+export function useVerifyEmail() {
+  return useMutation({
+    mutationFn: (data: VerifyEmailDto) => authService.verifyEmail(data),
+  })
+}
+
+export function useResendVerificationEmail() {
+  return useMutation({
+    mutationFn: (data: ResendVerificationEmailDto) => authService.resendVerificationEmail(data),
   })
 }
