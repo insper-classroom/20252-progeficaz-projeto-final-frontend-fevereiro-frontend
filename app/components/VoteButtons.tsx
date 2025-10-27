@@ -18,8 +18,11 @@ export function VoteButtons({
   onUpvote,
   onDownvote,
   isLoading = false,
-  orientation = 'vertical',
-  size = 'default'
+
+  orientation = 'horizontal',
+  size = 'default',
+  
+
 }: VoteButtonsProps) {
   const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation()

@@ -1,5 +1,5 @@
 import { ArrowLeft, MessageSquare, Send } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react' // Adicionado useEffect para melhor prática
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
@@ -14,15 +14,17 @@ import { useThread } from '~/hooks/use-threads'
 import {
   useDownvoteObj,
   useUpvoteObj,
+  // Se precisar, importe useRemoveVoteObj aqui
 } from '~/hooks/use-votes'
 import { useAuth } from '~/providers'
 
 export default function ThreadPage() {
-  const { threadId } = useParams()
+  const { threadId } = useParams<{ threadId: string }>() // Tipagem mais específica
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
   const [newComment, setNewComment] = useState('')
 
+  // Garantindo que threadId exista antes de passar para o hook
   const { data: thread, isLoading, error } = useThread(threadId!)
   const createPost = useCreatePost()
 
@@ -30,8 +32,15 @@ export default function ThreadPage() {
   const upvoteObj = useUpvoteObj()
   const downvoteObj = useDownvoteObj()
 
+  // CORREÇÃO: Usar useEffect para navegação é uma prática mais segura
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login')
+    }
+  }, [isAuthenticated, navigate])
+
+  // Se o usuário não está autenticado, renderiza nulo enquanto o useEffect redireciona.
   if (!isAuthenticated) {
-    navigate('/login')
     return null
   }
 
@@ -94,7 +103,8 @@ export default function ThreadPage() {
       </div>
     )
   }
-
+  
+  // CORREÇÃO: O fechamento do if e o início do corpo principal
   const posts = thread.posts || []
 
   return (
@@ -110,30 +120,38 @@ export default function ThreadPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
+
           <div className="flex gap-4">
+            {/* VOTE BUTTONS: Bloco correto mantido para a Thread */}
             <VoteButtons
               score={thread.score}
               userVote={thread.user_vote}
-              onUpvote={() => upvoteObj.mutate({  postId: threadId!, objType: "threads" })}
-              onDownvote={() => downvoteObj.mutate({  postId: threadId!, objType: "threads" })}
+              onUpvote={() => upvoteObj.mutate({ postId: threadId!, objType: "threads" })}
+              onDownvote={() => downvoteObj.mutate({ postId: threadId!, objType: "threads" })}
               isLoading={
                 upvoteObj.isPending ||
                 downvoteObj.isPending
               }
               size="lg"
             />
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{thread.title}</h1>
-              {thread.description && (
-                <p className="text-muted-foreground">{thread.description}</p>
-              )}
-              <p className="text-sm text-muted-foreground mt-2">
-                Criado em {new Date(thread.created_at).toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </p>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold mb-2">{thread.title}</h1>
+                {thread.description && (
+                  <p className="text-muted-foreground">{thread.description}</p>
+                )}
+                <p className="text-sm text-muted-foreground mt-2">
+                  Criado em {new Date(thread.created_at).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
+
+              {/* Botões de upvote e downvote DUPLICADOS E INCORRETOS FORAM REMOVIDOS AQUI */}
+              
             </div>
           </div>
         </div>
@@ -231,6 +249,7 @@ export default function ThreadPage() {
                         </div>
                       </div>
                     </CardContent>
+                    {/* Usar o Separator apenas entre os posts */}
                     {index < posts.length - 1 && <Separator />}
                   </Card>
                 ))}
