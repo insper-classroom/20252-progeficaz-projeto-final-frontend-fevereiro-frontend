@@ -202,3 +202,21 @@ body {
     letter-spacing: var(--tracking-normal);
   }
 }
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+    color: inherit;
+
+  }
+}
+
+@layer utilities {
+  .bg-gradient-radial {
+    background-image: radial-gradient(var(--tw-gradient-stops));
+  }
+  .bg-gradient-conic {
+    background-image: conic-gradient(from 180deg at center, var(--tw-gradient-stops));
+  }
+}

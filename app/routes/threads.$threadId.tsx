@@ -110,7 +110,7 @@ export default function ThreadPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b bg-card">
+      <div className="border-b bg-card" >
         <div className="max-w-4xl mx-auto p-6">
           <Button
             variant="ghost"
@@ -154,6 +154,14 @@ export default function ThreadPage() {
               
             </div>
           </div>
+            <div>
+                <Button variant="destructive" size="icon" aria-label="Submit" className="ml-auto">
+                <Button variant="destructive" >Reportar</Button>
+              
+                </Button>
+
+                
+            </div>
         </div>
       </div>
 
