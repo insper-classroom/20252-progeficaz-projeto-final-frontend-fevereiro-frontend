@@ -10,6 +10,7 @@ import { Skeleton } from '~/components/ui/skeleton'
 import { Textarea } from '~/components/ui/textarea'
 import { VoteButtons } from '~/components/VoteButtons'
 import { useCreatePost } from '~/hooks/use-posts'
+import { ReportModal } from '~/components/ReportModal'
 import { useThread } from '~/hooks/use-threads'
 import {
   useDownvoteObj,
@@ -155,10 +156,14 @@ export default function ThreadPage() {
             </div>
           </div>
             <div>
-                <Button variant="destructive" size="icon" aria-label="Submit" className="ml-auto">
-                <Button variant="destructive" >Reportar</Button>
-              
-                </Button>
+                <ReportModal
+                    contentId={thread.id}
+                    contentType="post"
+                >
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600">
+                        Reportar
+                    </Button>
+                </ReportModal>
 
                 
             </div>

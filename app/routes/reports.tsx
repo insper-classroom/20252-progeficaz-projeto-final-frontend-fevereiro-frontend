@@ -1,6 +1,4 @@
-// -----------------------------------------------------------
-// ARQUIVO NO SEU FRONT-END: src/components/ReportModal.jsx
-// -----------------------------------------------------------
+
 
 import React, { useState } from 'react';
 // Importe seu botão, modal, etc., conforme sua biblioteca de componentes
