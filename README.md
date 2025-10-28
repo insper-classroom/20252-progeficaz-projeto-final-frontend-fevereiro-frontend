@@ -10,6 +10,7 @@ A React + Vite frontend for a forum application that communicates with a Flask A
 - Reply to threads
 - Responsive design
 
+
 ## Getting Started
 
 ### Prerequisites
