@@ -10,6 +10,7 @@ import { Skeleton } from '~/components/ui/skeleton'
 import { Textarea } from '~/components/ui/textarea'
 import { VoteButtons } from '~/components/VoteButtons'
 import { useCreatePost } from '~/hooks/use-posts'
+import { ReportModal } from '~/components/ReportModal'
 import { useThread } from '~/hooks/use-threads'
 import {
   useDownvoteObj,
@@ -110,7 +111,7 @@ export default function ThreadPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b bg-card">
+      <div className="border-b bg-card" >
         <div className="max-w-4xl mx-auto p-6">
           <Button
             variant="ghost"
@@ -154,6 +155,18 @@ export default function ThreadPage() {
               
             </div>
           </div>
+            <div>
+                <ReportModal
+                    contentId={thread.id}
+                    contentType="thread"
+                >
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600">
+                        Reportar
+                    </Button>
+                </ReportModal>
+
+                
+            </div>
         </div>
       </div>
 
