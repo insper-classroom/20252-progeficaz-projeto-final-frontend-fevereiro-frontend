@@ -70,7 +70,7 @@ export default function ThreadPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-background p-4 sm:p-6">
         <div className="max-w-4xl mx-auto space-y-6">
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-32 w-full" />
@@ -83,7 +83,7 @@ export default function ThreadPage() {
 
   if (error || !thread) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-background p-4 sm:p-6">
         <div className="max-w-4xl mx-auto">
           <Button
             variant="ghost"
@@ -111,8 +111,8 @@ export default function ThreadPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b bg-card" >
-        <div className="max-w-4xl mx-auto p-6">
+      <div className="border-b bg-card">
+        <div className="max-w-4xl mx-auto p-4 sm:p-6">
           <Button
             variant="ghost"
             onClick={() => navigate('/')}
@@ -122,25 +122,32 @@ export default function ThreadPage() {
             Voltar
           </Button>
 
-          <div className="flex gap-4">
+          {/* layout responsivo: empilha em telas pequenas e alinha em telas maiores */}
+          <div className="flex flex-col md:flex-row gap-4 items-start">
             {/* VOTE BUTTONS: Bloco correto mantido para a Thread */}
-            <VoteButtons
-              score={thread.score}
-              userVote={thread.user_vote}
-              onUpvote={() => upvoteObj.mutate({ postId: threadId!, objType: "threads" })}
-              onDownvote={() => downvoteObj.mutate({ postId: threadId!, objType: "threads" })}
-              isLoading={
-                upvoteObj.isPending ||
-                downvoteObj.isPending
-              }
-              size="lg"
-            />
+            <div className="shrink-0">
+              <VoteButtons
+                score={thread.score}
+                userVote={thread.user_vote}
+                onUpvote={() => upvoteObj.mutate({ postId: threadId!, objType: "threads" })}
+                onDownvote={() => downvoteObj.mutate({ postId: threadId!, objType: "threads" })}
+                isLoading={
+                  upvoteObj.isPending ||
+                  downvoteObj.isPending
+                }
+                size="lg"
+              />
+            </div>
 
-            <div className="flex flex-col gap-4">
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold mb-2">{thread.title}</h1>
+            <div className="flex flex-col gap-4 flex-1 min-w-0">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-3xl font-bold mb-2 break-words max-w-full">
+                  {thread.title}
+                </h1>
                 {thread.description && (
-                  <p className="text-muted-foreground">{thread.description}</p>
+                  <p className="text-muted-foreground break-words">
+                    {thread.description}
+                  </p>
                 )}
                 <p className="text-sm text-muted-foreground mt-2">
                   Criado em {new Date(thread.created_at).toLocaleDateString('pt-BR', {
@@ -154,24 +161,23 @@ export default function ThreadPage() {
               {/* Botões de upvote e downvote DUPLICADOS E INCORRETOS FORAM REMOVIDOS AQUI */}
               
             </div>
-          </div>
-            <div>
-                <ReportModal
-                    contentId={thread.id}
-                    contentType="thread"
-                >
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600">
-                        Reportar
-                    </Button>
-                </ReportModal>
 
-                
+            <div className="self-start">
+              <ReportModal
+                contentId={thread.id}
+                contentType="thread"
+              >
+                <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600">
+                  Reportar
+                </Button>
+              </ReportModal>
             </div>
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Comment Form */}
         <Card>
           <CardHeader>
@@ -186,7 +192,7 @@ export default function ThreadPage() {
                 placeholder="Escreva seu comentário..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                className="min-h-[100px]"
+                className="min-h-[100px] break-words resize-vertical"
               />
               <div className="flex justify-end">
                 <Button
@@ -221,27 +227,30 @@ export default function ThreadPage() {
               </CardContent>
             </Card>
           ) : (
-            <ScrollArea className="h-[600px]">
+            // Altura responsiva: menor em celulares, maior em telas grandes
+            <ScrollArea className="w-full h-auto md:h-[600px]">
               <div className="space-y-4 pr-4">
                 {posts.map((post, index) => (
                   <Card key={post.id} className="hover:bg-accent/50 transition-colors">
                     <CardContent className="pt-6">
-                      <div className="flex gap-3">
-                        <VoteButtons
-                          score={post.score}
-                          userVote={post.user_vote}
-                          onUpvote={() => upvoteObj.mutate({ postId: post.id, objType: "posts" })}
-                          onDownvote={() => downvoteObj.mutate({ postId: post.id, objType: "posts" })}
-                          isLoading={
-                            upvoteObj.isPending ||
-                            downvoteObj.isPending
-                          }
-                          size="sm"
-                        />
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <p className="font-semibold text-sm">{post.author}</p>
+                      <div className="flex gap-3 items-start">
+                        <div className="shrink-0">
+                          <VoteButtons
+                            score={post.score}
+                            userVote={post.user_vote}
+                            onUpvote={() => upvoteObj.mutate({ postId: post.id, objType: "posts" })}
+                            onDownvote={() => downvoteObj.mutate({ postId: post.id, objType: "posts" })}
+                            isLoading={
+                              upvoteObj.isPending ||
+                              downvoteObj.isPending
+                            }
+                            size="sm"
+                          />
+                        </div>
+                        <div className="flex-1 space-y-3 min-w-0">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-sm break-words">{post.author}</p>
                               <p className="text-xs text-muted-foreground">
                                 {new Date(post.created_at).toLocaleString('pt-BR', {
                                   day: '2-digit',
@@ -258,7 +267,9 @@ export default function ThreadPage() {
                               </Button>
                             )}
                           </div>
-                          <p className="text-foreground whitespace-pre-wrap">{post.content}</p>
+                          <p className="text-foreground whitespace-pre-wrap break-words break-all">
+                            {post.content}
+                          </p>
                         </div>
                       </div>
                     </CardContent>

@@ -30,11 +30,30 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   const navigate = useNavigate()
+
   const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth()
   const { data: threads, isLoading: threadsLoading } = useThreads()
   const { data: filtersConfig, isLoading: filtersLoading } = useFiltersConfig()
 
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Inject a small client-side stylesheet so very long words/texts will break
+  // instead of creating a horizontal scroll inside the thread cards.
+  if (typeof document !== 'undefined' && !document.getElementById('threads-break-style')) {
+    const style = document.createElement('style')
+    style.id = 'threads-break-style'
+    style.textContent = `
+      /* Allow long unbroken text to wrap inside the thread cards */
+      .group h3,
+      .group p,
+      .group .line-clamp-2 {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        white-space: normal;
+      }
+    `
+    document.head.appendChild(style)
+  }
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({})
 
   // Vote mutations
