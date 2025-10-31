@@ -158,7 +158,7 @@ export default function ThreadPage() {
             <div>
                 <ReportModal
                     contentId={thread.id}
-                    contentType="post"
+                    contentType="thread"
                 >
                     <Button variant="ghost" size="sm" className="h-8 px-2 text-red-500 hover:text-red-600">
                         Reportar
