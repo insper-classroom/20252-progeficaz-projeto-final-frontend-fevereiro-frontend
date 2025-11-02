@@ -1,18 +1,21 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { postService } from '~/services'
-import type { CreatePostDto, UpdatePostDto } from '~/types'
+import type { CreatePostRequest, UpdatePostRequest } from '~/types'
 
-const POSTS_KEY = 'posts'
-const THREADS_KEY = 'threads'
-
+/**
+ * Hook para obter um post específico
+ */
 export function usePost(postId: string) {
   return useQuery({
-    queryKey: [POSTS_KEY, postId],
+    queryKey: ['posts', postId],
     queryFn: () => postService.getPost(postId),
     enabled: !!postId,
   })
 }
 
+/**
+ * Hook para criar post
+ */
 export function useCreatePost() {
   const queryClient = useQueryClient()
 
@@ -22,36 +25,49 @@ export function useCreatePost() {
       data,
     }: {
       threadId: string
-      data: CreatePostDto
+      data: CreatePostRequest
     }) => postService.createPost(threadId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: [THREADS_KEY, variables.threadId],
-      })
+      // Invalidar thread específica para recarregar posts
+      queryClient.invalidateQueries({ queryKey: ['threads', variables.threadId] })
     },
   })
 }
 
+/**
+ * Hook para atualizar post
+ */
 export function useUpdatePost() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ postId, data }: { postId: string; data: UpdatePostDto }) =>
-      postService.updatePost(postId, data),
+    mutationFn: ({
+      postId,
+      data,
+    }: {
+      postId: string
+      data: UpdatePostRequest
+    }) => postService.updatePost(postId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [POSTS_KEY, variables.postId] })
+      // Invalidar post específico
+      queryClient.invalidateQueries({ queryKey: ['posts', variables.postId] })
+      // Invalidar threads para recarregar posts
+      queryClient.invalidateQueries({ queryKey: ['threads'] })
     },
   })
 }
 
+/**
+ * Hook para deletar post
+ */
 export function useDeletePost() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (postId: string) => postService.deletePost(postId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [POSTS_KEY] })
-      queryClient.invalidateQueries({ queryKey: [THREADS_KEY] })
+      // Invalidar threads para recarregar posts
+      queryClient.invalidateQueries({ queryKey: ['threads'] })
     },
   })
 }

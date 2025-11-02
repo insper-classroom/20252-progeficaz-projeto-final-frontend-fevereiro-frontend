@@ -1,35 +1,46 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { threadService } from '~/services'
-import type { CreateThreadDto, UpdateThreadDto } from '~/types'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { threadService, type ThreadFilters } from '~/services'
+import type { CreateThreadRequest, UpdateThreadRequest } from '~/types'
 
-const THREADS_KEY = 'threads'
-
-export function useThreads() {
+/**
+ * Hook para listar threads
+ */
+export function useThreads(filters?: ThreadFilters) {
   return useQuery({
-    queryKey: [THREADS_KEY],
-    queryFn: () => threadService.listThreads(),
+    queryKey: ['threads', filters],
+    queryFn: () => threadService.listThreads(filters),
   })
 }
 
+/**
+ * Hook para obter uma thread específica
+ */
 export function useThread(threadId: string) {
   return useQuery({
-    queryKey: [THREADS_KEY, threadId],
+    queryKey: ['threads', threadId],
     queryFn: () => threadService.getThread(threadId),
     enabled: !!threadId,
   })
 }
 
+/**
+ * Hook para criar thread
+ */
 export function useCreateThread() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: CreateThreadDto) => threadService.createThread(data),
+    mutationFn: (data: CreateThreadRequest) => threadService.createThread(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [THREADS_KEY] })
+      // Invalidar lista de threads
+      queryClient.invalidateQueries({ queryKey: ['threads'] })
     },
   })
 }
 
+/**
+ * Hook para atualizar thread
+ */
 export function useUpdateThread() {
   const queryClient = useQueryClient()
 
@@ -39,24 +50,27 @@ export function useUpdateThread() {
       data,
     }: {
       threadId: string
-      data: UpdateThreadDto
+      data: UpdateThreadRequest
     }) => threadService.updateThread(threadId, data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [THREADS_KEY] })
-      queryClient.invalidateQueries({
-        queryKey: [THREADS_KEY, variables.threadId],
-      })
+      // Invalidar thread específica e lista
+      queryClient.invalidateQueries({ queryKey: ['threads', variables.threadId] })
+      queryClient.invalidateQueries({ queryKey: ['threads'] })
     },
   })
 }
 
+/**
+ * Hook para deletar thread
+ */
 export function useDeleteThread() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (threadId: string) => threadService.deleteThread(threadId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [THREADS_KEY] })
+      // Invalidar lista de threads
+      queryClient.invalidateQueries({ queryKey: ['threads'] })
     },
   })
 }

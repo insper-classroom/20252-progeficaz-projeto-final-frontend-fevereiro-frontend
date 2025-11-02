@@ -1,18 +1,20 @@
+// ==================== Post Types ====================
 export interface Post {
   id: string
   thread_id: string
-  content: string
   author: string
-  created_at: string
-  updated_at: string
+  content: string
+  pinned: boolean
+  score: number // upvotes - downvotes
+  created_at: string // ISO 8601
+  updated_at: string // ISO 8601
+  user_vote: 'upvote' | 'downvote' | null
 }
 
-export interface CreatePostDto {
-  content: string
-  author: string
+export interface CreatePostRequest {
+  content: string // Required
 }
 
-export interface UpdatePostDto {
-  content?: string
-  author?: string
+export interface UpdatePostRequest {
+  content: string // Required
 }

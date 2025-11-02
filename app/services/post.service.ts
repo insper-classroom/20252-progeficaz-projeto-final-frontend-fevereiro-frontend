@@ -1,13 +1,20 @@
 import { apiClient } from '~/lib/api-client'
-import type { Post, CreatePostDto, UpdatePostDto } from '~/types'
+import type {
+  Post,
+  CreatePostRequest,
+  UpdatePostRequest,
+  SuccessResponse,
+} from '~/types'
 
 export const postService = {
-  getPost: async (postId: string): Promise<Post> => {
-    const response = await apiClient.get<Post>(`/api/posts/${postId}`)
-    return response.data
-  },
-
-  createPost: async (threadId: string, data: CreatePostDto): Promise<Post> => {
+  /**
+   * Criar post em uma thread
+   * POST /api/threads/:threadId/posts
+   */
+  createPost: async (
+    threadId: string,
+    data: CreatePostRequest
+  ): Promise<Post> => {
     const response = await apiClient.post<Post>(
       `/api/threads/${threadId}/posts`,
       data
@@ -15,12 +22,38 @@ export const postService = {
     return response.data
   },
 
-  updatePost: async (postId: string, data: UpdatePostDto): Promise<Post> => {
-    const response = await apiClient.put<Post>(`/api/posts/${postId}`, data)
+  /**
+   * Obter post por ID
+   * GET /api/posts/:id
+   */
+  getPost: async (postId: string): Promise<Post> => {
+    const response = await apiClient.get<Post>(`/api/posts/${postId}`)
     return response.data
   },
 
-  deletePost: async (postId: string): Promise<void> => {
-    await apiClient.delete(`/api/posts/${postId}`)
+  /**
+   * Atualizar post
+   * PUT /api/posts/:id
+   */
+  updatePost: async (
+    postId: string,
+    data: UpdatePostRequest
+  ): Promise<SuccessResponse> => {
+    const response = await apiClient.put<SuccessResponse>(
+      `/api/posts/${postId}`,
+      data
+    )
+    return response.data
+  },
+
+  /**
+   * Deletar post
+   * DELETE /api/posts/:id
+   */
+  deletePost: async (postId: string): Promise<SuccessResponse> => {
+    const response = await apiClient.delete<SuccessResponse>(
+      `/api/posts/${postId}`
+    )
+    return response.data
   },
 }

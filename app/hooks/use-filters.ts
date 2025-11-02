@@ -1,21 +1,48 @@
 import { useQuery } from '@tanstack/react-query'
-import { filterService } from '~/services'
+import { filterService, type FilterType, type SubjectsFilters } from '~/services'
 
-const FILTERS_KEY = 'filters'
-
+/**
+ * Hook para obter configuração completa de filtros
+ */
 export function useFiltersConfig() {
   return useQuery({
-    queryKey: [FILTERS_KEY, 'config'],
+    queryKey: ['filters', 'config'],
     queryFn: () => filterService.getFiltersConfig(),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 60, // 1 hora - filtros não mudam com frequência
   })
 }
 
-export function useFiltersByType(filterType: string) {
+/**
+ * Hook para obter opções de filtro por tipo
+ */
+export function useFiltersByType(
+  filterType: FilterType,
+  filters?: SubjectsFilters
+) {
   return useQuery({
-    queryKey: [FILTERS_KEY, filterType],
-    queryFn: () => filterService.getFiltersByType(filterType),
-    enabled: !!filterType,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    queryKey: ['filters', filterType, filters],
+    queryFn: () => filterService.getFiltersByType(filterType, filters),
+    staleTime: 1000 * 60 * 30, // 30 minutos
   })
+}
+
+/**
+ * Hook helper para obter semestres
+ */
+export function useSemesters() {
+  return useFiltersByType('semesters')
+}
+
+/**
+ * Hook helper para obter cursos
+ */
+export function useCourses() {
+  return useFiltersByType('courses')
+}
+
+/**
+ * Hook helper para obter matérias
+ */
+export function useSubjects(filters?: SubjectsFilters) {
+  return useFiltersByType('subjects', filters)
 }
