@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useNavigate, Link } from 'react-router'
+import { Navigate, Link } from 'react-router'
 import { useRegister } from '~/hooks'
 import { useAuth } from '~/providers'
 import { Button } from '~/components/ui/button'
@@ -13,20 +13,21 @@ import {
   CardTitle,
 } from '~/components/ui/card'
 import { Alert, AlertDescription } from '~/components/ui/alert'
+import { CheckCircle2, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Route } from './+types/register'
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'Register' },
+    { title: 'Register - Fevereiro' },
     { name: 'description', content: 'Create a new account' },
   ]
 }
 
 export default function Register() {
-  const navigate = useNavigate()
-  const { isAuthenticated, login: setAuth } = useAuth()
+  const { isAuthenticated } = useAuth()
   const { mutate: register, isPending, error } = useRegister()
+  const [success, setSuccess] = useState(false)
 
   const [formData, setFormData] = useState({
     email: '',
@@ -40,22 +41,68 @@ export default function Register() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     register(formData, {
-      onSuccess: (data) => {
-        setAuth(data.access_token, data.user)
-        toast.success('Account created successfully!', {
-          description: `Welcome, ${data.user.email}`,
+      onSuccess: () => {
+        setSuccess(true)
+        toast.success('Account created!', {
+          description: 'Please check your email to verify your account.',
         })
-        navigate('/')
       },
       onError: (error: any) => {
         toast.error('Registration failed', {
           description:
-            error?.response?.data?.message ||
+            error?.response?.data?.error ||
             error?.message ||
             'Failed to create account. Please try again.',
         })
       },
     })
+  }
+
+  if (success) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center mb-4">
+              <CheckCircle2 className="h-16 w-16 text-green-500" />
+            </div>
+            <CardTitle className="text-2xl font-bold">
+              Check your email
+            </CardTitle>
+            <CardDescription>
+              We've sent a verification link to{' '}
+              <span className="font-medium">{formData.email}</span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert>
+              <Mail className="h-4 w-4" />
+              <AlertDescription>
+                Click the link in the email to verify your account and start
+                using Fevereiro.
+              </AlertDescription>
+            </Alert>
+
+            <div className="text-center space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Didn't receive the email?
+              </p>
+              <Link to="/resend-verification" className="text-sm underline">
+                Resend verification email
+              </Link>
+            </div>
+
+            <div className="text-center">
+              <Link to="/login">
+                <Button variant="outline" className="w-full">
+                  Back to login
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -64,7 +111,7 @@ export default function Register() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
           <CardDescription>
-            Enter your information to create your account
+            Use your Insper email to create your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -75,7 +122,7 @@ export default function Register() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="seu.email@al.insper.edu.br"
+                placeholder="seu.nome@al.insper.edu.br"
                 autoComplete="email"
                 required
                 value={formData.email}
@@ -83,6 +130,9 @@ export default function Register() {
                   setFormData({ ...formData, email: e.target.value })
                 }
               />
+              <p className="text-xs text-muted-foreground">
+                Must be an @insper.edu.br or @al.insper.edu.br email
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -103,7 +153,9 @@ export default function Register() {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>
-                  {error.message || 'Failed to register. Please try again.'}
+                  {(error as any)?.response?.data?.error ||
+                    error.message ||
+                    'Failed to register. Please try again.'}
                 </AlertDescription>
               </Alert>
             )}

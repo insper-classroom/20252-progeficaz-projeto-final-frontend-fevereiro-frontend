@@ -18,7 +18,7 @@ import type { Route } from './+types/login'
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'Login' },
+    { title: 'Login - Fevereiro' },
     { name: 'description', content: 'Login to your account' },
   ]
 }
@@ -41,19 +41,36 @@ export default function Login() {
     e.preventDefault()
     login(formData, {
       onSuccess: (data) => {
-        setAuth(data.access_token, data.user)
+        // API retorna apenas access_token após login bem-sucedido
+        // Vamos buscar o usuário com o token
+        setAuth(data.access_token, {
+          id: '',
+          username: formData.email.split('@')[0],
+          email: formData.email,
+        })
         toast.success('Login successful!', {
-          description: `Welcome back, ${data.user.email}`,
+          description: `Welcome back!`,
         })
         navigate('/')
       },
       onError: (error: any) => {
-        toast.error('Login failed', {
-          description:
-            error?.response?.data?.message ||
-            error?.message ||
-            'Invalid credentials. Please try again.',
-        })
+        const errorMessage = error?.response?.data?.error || error?.message
+
+        // Verificar se é erro de email não verificado
+        if (errorMessage?.toLowerCase().includes('not verified') ||
+            errorMessage?.toLowerCase().includes('verify')) {
+          toast.error('Email not verified', {
+            description: 'Please verify your email before logging in.',
+            action: {
+              label: 'Resend email',
+              onClick: () => navigate('/resend-verification'),
+            },
+          })
+        } else {
+          toast.error('Login failed', {
+            description: errorMessage || 'Invalid credentials. Please try again.',
+          })
+        }
       },
     })
   }
@@ -62,9 +79,9 @@ export default function Login() {
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
+          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
           <CardDescription>
-            Enter your email and password to sign in to your account
+            Enter your credentials to access your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -75,7 +92,7 @@ export default function Login() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="seu.email@al.insper.edu.br"
+                placeholder="seu.nome@al.insper.edu.br"
                 autoComplete="email"
                 required
                 value={formData.email}
@@ -103,7 +120,9 @@ export default function Login() {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>
-                  {error.message || 'Failed to login. Please try again.'}
+                  {(error as any)?.response?.data?.error ||
+                    error.message ||
+                    'Failed to login. Please try again.'}
                 </AlertDescription>
               </Alert>
             )}
@@ -113,11 +132,21 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link to="/register" className="underline">
-              Sign up
-            </Link>
+          <div className="mt-4 text-center text-sm space-y-2">
+            <div>
+              Don&apos;t have an account?{' '}
+              <Link to="/register" className="underline">
+                Sign up
+              </Link>
+            </div>
+            <div>
+              <Link
+                to="/resend-verification"
+                className="text-muted-foreground hover:text-foreground underline"
+              >
+                Resend verification email
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -7,4 +7,9 @@ export default [
   // Auth routes
   route("login", "routes/login.tsx"),
   route("register", "routes/register.tsx"),
+  route("verify-email", "routes/verify-email.tsx"),
+  route("resend-verification", "routes/resend-verification.tsx"),
+
+  // Thread routes
+  route("thread/:id", "routes/thread.$id.tsx"),
 ] satisfies RouteConfig;
