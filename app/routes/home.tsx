@@ -256,6 +256,15 @@ export default function Home() {
 
             {/* User menu */}
             <div className="flex items-center gap-3 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/reports')}
+                className="gap-2"
+              >
+                <Flag className="h-4 w-4" />
+                <span className="hidden md:inline">Reports</span>
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="gap-2">

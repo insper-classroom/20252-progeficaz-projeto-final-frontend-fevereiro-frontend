@@ -12,4 +12,8 @@ export default [
 
   // Thread routes
   route("thread/:id", "routes/thread.$id.tsx"),
+
+  // Report routes
+  route("reports", "routes/reports.tsx"),
+  route("reports/:id", "routes/report.$id.tsx"),
 ] satisfies RouteConfig;
