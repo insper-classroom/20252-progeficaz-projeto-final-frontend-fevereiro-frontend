@@ -10,6 +10,11 @@ A React + Vite frontend for a forum application that communicates with a Flask A
 - Reply to threads
 - Responsive design
 
+## 📚 Frontend Endpoint
+
+**Base URL (Local)**: `http://localhost:5173`  
+**Base URL (Production)**: `http://54.221.82.163`
+
 ## Getting Started
 
 ### Prerequisites
